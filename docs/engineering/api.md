@@ -20,3 +20,11 @@ It's not excluded that some services might decide to expose both protocols, and 
 - ✔️ Surgical precision in fetching data
 - 🔴 Not well known
 - 🔴 Hard to implement
+
+## Stick with what's out there
+
+Interoperability is king. What's the saying? Embrace, extend, extinguish 😉.
+
+The object storage layer should expose an S3-like API. The identity later an OpenID Connect API.
+
+Is there a standard API for browsing photos? Let's try and use it.
