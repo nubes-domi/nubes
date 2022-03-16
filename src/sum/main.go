@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"log"
+	"nubes/sum/db"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lestrrat-go/jwx/jwk"
@@ -12,35 +13,42 @@ import (
 var RSAKey *rsa.PrivateKey
 
 func PrepareKeys() {
-	JWKSet = jwk.NewSet()
-
 	var err error
+
+	JWKSet = jwk.NewSet()
+	JWKPublicSet = jwk.NewSet()
+
 	RSAKey, err = rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		log.Panicf("failed to generate new RSA privatre key: %s\n", err)
+		log.Panicf("failed to generate new RSA key: %s\n", err)
 	}
 
 	key, err := jwk.New(RSAKey)
 	if err != nil {
-		log.Panicf("failed to create symmetric key: %s\n", err)
+		log.Panicf("failed to JWK from RSA: %s\n", err)
 	}
 
+	key.Set("use", "sig")
+	key.Set("kid", "deadbeef")
+
+	JWKSet.Add(key)
+
 	publicKey, err := key.PublicKey()
-	publicKey.Set("use", "sig")
-	publicKey.Set("kid", "deadbeef")
 	if err != nil {
 		log.Panicf("expected jwk.SymmetricKey, got %T\n", key)
 		return
 	}
 
-	JWKSet.Add(publicKey)
+	JWKSet.Add(key)
+	JWKPublicSet.Add(publicKey)
 }
 
 func main() {
 	PrepareKeys()
+	db.Init()
 
 	router := gin.Default()
-	router.LoadHTMLFiles("new_session.html")
+	router.LoadHTMLFiles("new_session.html", "error.html")
 
 	router.GET("/.well-known/openid-configuration", openidConfiguration)
 	router.GET("/openid/jwks", jwks)
