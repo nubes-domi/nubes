@@ -5,7 +5,7 @@ type OpenidConfiguration struct {
 	AuthorizationEndpoint                      string   `json:"authorization_endpoint"`
 	TokenEndpoint                              string   `json:"token_endpoint"`
 	UserinfoEndpoint                           string   `json:"userinfo_endpoint,omitempty"`
-	JWKsURI                                    string   `json:"jwks_uri"`
+	JwksURI                                    string   `json:"jwks_uri"`
 	RegistrationEndpoint                       string   `json:"registration_endpoint,omitempty"`
 	ScopesSupported                            []string `json:"scopes_supported,omitempty"`
 	ResponseTypesSupported                     []string `json:"response_types_supported"`

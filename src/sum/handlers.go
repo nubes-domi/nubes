@@ -26,22 +26,26 @@ func baseURI(c *gin.Context) string {
 
 func openidConfiguration(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, OpenidConfiguration{
-		Issuer:                            baseURI(c),
-		AuthorizationEndpoint:             baseURI(c) + "/openid/authorization",
-		TokenEndpoint:                     baseURI(c) + "/openid/token",
-		UserinfoEndpoint:                  baseURI(c) + "/openid/userinfo",
-		JWKsURI:                           baseURI(c) + "/openid/jwks",
-		RegistrationEndpoint:              baseURI(c) + "/openid/registration",
-		ScopesSupported:                   []string{"openid"},
-		ResponseTypesSupported:            []string{"code", "id_token", "token id_token"},
-		ResponseModesSupported:            []string{"query", "fragment"},
-		GrantTypesSupported:               []string{"authorization_code", "implicit"},
-		ACRValuesSupported:                []string{},
-		SubjectTypesSupported:             []string{"public"},
-		IdTokenSigningAlgValuesSupported:  []string{"none", "RS256"},
-		TokenEndpointAuthMethodsSupported: []string{"client_secret_post", "client_secret_basic", "client_secret_jwt", "private_key_jwt"},
-		RequestParameterSupported:         true,
-		RequestURIParamterSupported:       true,
+		Issuer:                                 baseURI(c),
+		AuthorizationEndpoint:                  baseURI(c) + "/openid/authorization",
+		TokenEndpoint:                          baseURI(c) + "/openid/token",
+		UserinfoEndpoint:                       baseURI(c) + "/openid/userinfo",
+		JwksURI:                                baseURI(c) + "/openid/jwks",
+		RegistrationEndpoint:                   baseURI(c) + "/openid/registration",
+		ScopesSupported:                        []string{"openid"},
+		ResponseTypesSupported:                 []string{"code", "id_token", "token id_token"},
+		ResponseModesSupported:                 []string{"query", "fragment"},
+		GrantTypesSupported:                    []string{"authorization_code", "implicit"},
+		ACRValuesSupported:                     []string{},
+		SubjectTypesSupported:                  []string{"public", "pairwise"},
+		IdTokenSigningAlgValuesSupported:       []string{"none", "RS256"},
+		UserinfoSigningAlgValuesSupported:      []string{"none", "RS256"},
+		TokenEndpointAuthMethodsSupported:      []string{"none", "client_secret_post", "client_secret_basic", "client_secret_jwt", "private_key_jwt"},
+		RequestParameterSupported:              true,
+		RequestURIParamterSupported:            true,
+		RequestObjectSigningAlgValuesSupported: []string{"none", "RS256"},
+		ClaimsSupported:                        []string{"sub", "iss", "auth_time", "name", "email", "locale", "zoneinfo", "preferred_username", "profile", "picture", "phone_number"},
+		ClaimsParameterSupported:               true,
 	})
 }
 
@@ -236,8 +240,14 @@ func authorizationStart(c *gin.Context) {
 			"state": request.State,
 		}))
 	} else {
+		logo := client.GetLogoURI("")
+		policyUri := client.GetPolicyURI("")
+		tosUri := client.GetTosURI("")
 		c.HTML(http.StatusOK, "new_session.html", gin.H{
 			"request": request,
+			"logo":    logo,
+			"policy":  policyUri,
+			"tos":     tosUri,
 		})
 	}
 }

@@ -13,41 +13,43 @@ import (
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/utils"
 )
 
 type OidcClient struct {
-	ID                                string `gorm:"primaryKey"`
-	CreatedAt                         time.Time
-	UpdatedAt                         time.Time
-	ClientSecretDigest                string
-	ApplicationType                   string `json:"application_type"`
-	JWKsURI                           string `json:"jwks_uri"`
-	JWKs                              string `json:"-"`
-	SectorIdentifierURI               string `json:"sector_identifier_uri"`
-	SubjectType                       string `json:"subject_type"`
-	IDTokenSignedResponseAlg          string `json:"id_token_signed_response_alg"`
-	IDTokenEncryptedResponseAlg       string `json:"id_token_encrypted_response_alg"`
-	IDTokenEncryptedResponseEnc       string `json:"id_token_encrypted_response_enc"`
-	UserinfoSignedResponseAlg         string `json:"userinfo_signed_response_alg"`
-	UserinfoEncryptedResponseAlg      string `json:"userinfo_encrypted_response_alg"`
-	UserinfoEncryptedResponseEnc      string `json:"userinfo_encrypted_response_enc"`
-	RequestObjectSignedResponseAlg    string `json:"request_object_signed_response_alg"`
-	RequestObjectEncryptedResponseAlg string `json:"request_object_encrypted_response_alg"`
-	RequestObjectEncryptedResponseEnc string `json:"request_object_encrypted_response_enc"`
-	TokenEndpointAuthMethod           string `json:"token_endpoint_auth_method"`
-	TokenEndpointAuthSigningAlg       string `json:"token_endpoint_auth_signing_alg"`
-	DefaultMaxAge                     int    `json:"default_max_age"`
-	RequireAuthTime                   bool   `json:"require_auth_time"`
-	InitiateLoginURI                  string `json:"initiate_login_uri"`
+	ID                                string    `gorm:"primaryKey"`
+	CreatedAt                         time.Time `json:"-"`
+	UpdatedAt                         time.Time `json:"-"`
+	ClientSecretDigest                string    `json:"-"`
+	ClientSecret                      string    `json:"client_secret" gorm:"-"`
+	ApplicationType                   string    `json:"application_type"`
+	JwksURI                           string    `json:"jwks_uri"`
+	Jwks                              string    `json:"-"`
+	SectorIdentifierURI               string    `json:"sector_identifier_uri"`
+	SubjectType                       string    `json:"subject_type"`
+	IDTokenSignedResponseAlg          string    `json:"id_token_signed_response_alg"`
+	IDTokenEncryptedResponseAlg       string    `json:"id_token_encrypted_response_alg"`
+	IDTokenEncryptedResponseEnc       string    `json:"id_token_encrypted_response_enc"`
+	UserinfoSignedResponseAlg         string    `json:"userinfo_signed_response_alg"`
+	UserinfoEncryptedResponseAlg      string    `json:"userinfo_encrypted_response_alg"`
+	UserinfoEncryptedResponseEnc      string    `json:"userinfo_encrypted_response_enc"`
+	RequestObjectSignedResponseAlg    string    `json:"request_object_signed_response_alg"`
+	RequestObjectEncryptedResponseAlg string    `json:"request_object_encrypted_response_alg"`
+	RequestObjectEncryptedResponseEnc string    `json:"request_object_encrypted_response_enc"`
+	TokenEndpointAuthMethod           string    `json:"token_endpoint_auth_method"`
+	TokenEndpointAuthSigningAlg       string    `json:"token_endpoint_auth_signing_alg"`
+	DefaultMaxAge                     int       `json:"default_max_age"`
+	RequireAuthTime                   bool      `json:"require_auth_time"`
+	InitiateLoginURI                  string    `json:"initiate_login_uri"`
 
-	RedirectURIs     []OidcClientRedirectURI
-	ResponseTypes    []OidcClientResponseType
-	GrantTypes       []OidcClientGrantType
-	Contacts         []OidcClientContact `json:"-"`
-	LocalizedDetails []OidcClientLocalizedDetail
-	DefaultACRValues []OidcClientDefaultACRValue
-	RequestURIs      []OidcClientRequestURI
+	RedirectURIs     []OidcClientRedirectURI     `json:"-"`
+	ResponseTypes    []OidcClientResponseType    `json:"-"`
+	GrantTypes       []OidcClientGrantType       `json:"-"`
+	Contacts         []OidcClientContact         `json:"-"`
+	LocalizedDetails []OidcClientLocalizedDetail `json:"-"`
+	DefaultACRValues []OidcClientDefaultACRValue `json:"-"`
+	RequestURIs      []OidcClientRequestURI      `json:"-"`
 }
 
 type OidcClientRedirectURI struct {
@@ -143,7 +145,7 @@ func BuildOpenIDClient(c *gin.Context) OidcClient {
 				log.Panicf("Invalid JWK object")
 			}
 
-			client.JWKs = string(plain)
+			client.Jwks = string(plain)
 
 		case "client_name", "logo_uri", "client_uri", "policy_uri", "tos_uri":
 			// these fields are potentially localised
@@ -278,7 +280,56 @@ func (client *OidcClient) GetGrantTypes() []string {
 	return res
 }
 
+func (client *OidcClient) GetLogoURI(locale string) string {
+	row := OidcClientLocalizedDetail{}
+
+	tx := DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "logo_uri", locale)
+	if tx.Error == nil {
+		return row.Value
+	}
+
+	tx = DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "logo_uri", "")
+	if tx.Error == nil {
+		return row.Value
+	}
+
+	return ""
+}
+
+func (client *OidcClient) GetPolicyURI(locale string) string {
+	row := OidcClientLocalizedDetail{}
+
+	tx := DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "policy_uri", locale)
+	if tx.Error == nil {
+		return row.Value
+	}
+
+	tx = DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "policy_uri", "")
+	if tx.Error == nil {
+		return row.Value
+	}
+
+	return ""
+}
+
+func (client *OidcClient) GetTosURI(locale string) string {
+	row := OidcClientLocalizedDetail{}
+
+	tx := DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "tos_uri", locale)
+	if tx.Error == nil {
+		return row.Value
+	}
+
+	tx = DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "tos_uri", "")
+	if tx.Error == nil {
+		return row.Value
+	}
+
+	return ""
+}
+
 func (client *OidcClient) CanRedirectTo(uri string) bool {
+	fmt.Printf("ALLOWED: %v\nSent: %s\n", client.GetRedirectURIs(), uri)
 	return utils.Contains(client.GetRedirectURIs(), uri)
 }
 
@@ -300,7 +351,7 @@ func validateURIArray(uris []string) error {
 func LoadClient(clientId string) OidcClient {
 	client := OidcClient{}
 
-	res := DB.First(&client, "id = ?", clientId)
+	res := DB.Preload(clause.Associations).First(&client, "id = ?", clientId)
 	if res.Error != nil {
 		log.Panicf("Error while Loading client: %v", res.Error)
 	}
@@ -372,12 +423,12 @@ func (client *OidcClient) Validate() error {
 		return fmt.Errorf("Invalid subject type: %s. Permitted values are \"public\" and \"pairwise\"", client.SubjectType)
 	}
 
-	if client.JWKsURI != "" {
-		if err := validateURI(client.JWKsURI); err != nil {
+	if client.JwksURI != "" {
+		if err := validateURI(client.JwksURI); err != nil {
 			return err
 		}
 
-		if len(client.JWKs) != 0 {
+		if len(client.Jwks) != 0 {
 			return fmt.Errorf("RP cannot provide both jwks_uri and jwks")
 		}
 	}
