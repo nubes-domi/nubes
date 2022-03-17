@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -17,63 +18,49 @@ import (
 	"gorm.io/gorm/utils"
 )
 
+type SimpleStringArray []string
+
+func (n *SimpleStringArray) Scan(value interface{}) error {
+	*n = strings.Split(string(value.(string)), "|")
+	return nil
+}
+
+func (n *SimpleStringArray) Value() (driver.Value, error) {
+	return driver.Value(strings.Join(*n, "|")), nil
+}
+
 type OidcClient struct {
-	ID                                string    `gorm:"primaryKey"`
-	CreatedAt                         time.Time `json:"-"`
-	UpdatedAt                         time.Time `json:"-"`
-	ClientSecretDigest                string    `json:"-"`
-	ClientSecret                      string    `json:"client_secret" gorm:"-"`
-	ApplicationType                   string    `json:"application_type"`
-	JwksURI                           string    `json:"jwks_uri"`
-	Jwks                              string    `json:"-"`
-	SectorIdentifierURI               string    `json:"sector_identifier_uri"`
-	SubjectType                       string    `json:"subject_type"`
-	IDTokenSignedResponseAlg          string    `json:"id_token_signed_response_alg"`
-	IDTokenEncryptedResponseAlg       string    `json:"id_token_encrypted_response_alg"`
-	IDTokenEncryptedResponseEnc       string    `json:"id_token_encrypted_response_enc"`
-	UserinfoSignedResponseAlg         string    `json:"userinfo_signed_response_alg"`
-	UserinfoEncryptedResponseAlg      string    `json:"userinfo_encrypted_response_alg"`
-	UserinfoEncryptedResponseEnc      string    `json:"userinfo_encrypted_response_enc"`
-	RequestObjectSignedResponseAlg    string    `json:"request_object_signed_response_alg"`
-	RequestObjectEncryptedResponseAlg string    `json:"request_object_encrypted_response_alg"`
-	RequestObjectEncryptedResponseEnc string    `json:"request_object_encrypted_response_enc"`
-	TokenEndpointAuthMethod           string    `json:"token_endpoint_auth_method"`
-	TokenEndpointAuthSigningAlg       string    `json:"token_endpoint_auth_signing_alg"`
-	DefaultMaxAge                     int       `json:"default_max_age"`
-	RequireAuthTime                   bool      `json:"require_auth_time"`
-	InitiateLoginURI                  string    `json:"initiate_login_uri"`
-
-	RedirectURIs     []OidcClientRedirectURI     `json:"-"`
-	ResponseTypes    []OidcClientResponseType    `json:"-"`
-	GrantTypes       []OidcClientGrantType       `json:"-"`
-	Contacts         []OidcClientContact         `json:"-"`
-	LocalizedDetails []OidcClientLocalizedDetail `json:"-"`
-	DefaultACRValues []OidcClientDefaultACRValue `json:"-"`
-	RequestURIs      []OidcClientRequestURI      `json:"-"`
-}
-
-type OidcClientRedirectURI struct {
-	gorm.Model
-	OidcClientID string
-	RedirectURI  string
-}
-
-type OidcClientResponseType struct {
-	gorm.Model
-	OidcClientID string
-	ResponseType string
-}
-
-type OidcClientGrantType struct {
-	gorm.Model
-	OidcClientID string
-	GrantType    string
-}
-
-type OidcClientContact struct {
-	gorm.Model
-	OidcClientID string
-	Contact      string
+	ID                                string                      `gorm:"primaryKey"`
+	CreatedAt                         time.Time                   `json:"-"`
+	UpdatedAt                         time.Time                   `json:"-"`
+	ClientSecretDigest                string                      `json:"-"`
+	ClientSecret                      string                      `json:"client_secret" gorm:"-"`
+	ApplicationType                   string                      `json:"application_type"`
+	JwksURI                           string                      `json:"jwks_uri"`
+	Jwks                              string                      `json:"-"`
+	SectorIdentifierURI               string                      `json:"sector_identifier_uri"`
+	SubjectType                       string                      `json:"subject_type"`
+	IDTokenSignedResponseAlg          string                      `json:"id_token_signed_response_alg"`
+	IDTokenEncryptedResponseAlg       string                      `json:"id_token_encrypted_response_alg"`
+	IDTokenEncryptedResponseEnc       string                      `json:"id_token_encrypted_response_enc"`
+	UserinfoSignedResponseAlg         string                      `json:"userinfo_signed_response_alg"`
+	UserinfoEncryptedResponseAlg      string                      `json:"userinfo_encrypted_response_alg"`
+	UserinfoEncryptedResponseEnc      string                      `json:"userinfo_encrypted_response_enc"`
+	RequestObjectSignedResponseAlg    string                      `json:"request_object_signed_response_alg"`
+	RequestObjectEncryptedResponseAlg string                      `json:"request_object_encrypted_response_alg"`
+	RequestObjectEncryptedResponseEnc string                      `json:"request_object_encrypted_response_enc"`
+	TokenEndpointAuthMethod           string                      `json:"token_endpoint_auth_method"`
+	TokenEndpointAuthSigningAlg       string                      `json:"token_endpoint_auth_signing_alg"`
+	DefaultMaxAge                     int                         `json:"default_max_age"`
+	RequireAuthTime                   bool                        `json:"require_auth_time"`
+	InitiateLoginURI                  string                      `json:"initiate_login_uri"`
+	RedirectURIs                      SimpleStringArray           `gorm:"type:text" json:"redirect_uris"`
+	ResponseTypes                     SimpleStringArray           `gorm:"type:text" json:"response_types"`
+	GrantTypes                        SimpleStringArray           `gorm:"type:text" json:"grant_types"`
+	Contacts                          SimpleStringArray           `gorm:"type:text" json:"contacts"`
+	DefaultACRValues                  SimpleStringArray           `gorm:"type:text" json:"default_acr_values"`
+	RequestURIs                       SimpleStringArray           `gorm:"type:text" json:"request_uris"`
+	LocalizedDetails                  []OidcClientLocalizedDetail `json:"-"`
 }
 
 // Handles client_name, logo_uri, client_uri, policy_uri, tos_uri
@@ -83,18 +70,6 @@ type OidcClientLocalizedDetail struct {
 	Locale       string
 	Field        string
 	Value        string
-}
-
-type OidcClientDefaultACRValue struct {
-	gorm.Model
-	OidcClientID string
-	ACRValue     string
-}
-
-type OidcClientRequestURI struct {
-	gorm.Model
-	OidcClientID string
-	RequestURI   string
 }
 
 func toStringArray(field interface{}) []string {
@@ -159,48 +134,6 @@ func BuildOpenIDClient(c *gin.Context) OidcClient {
 				Field:  key,
 				Value:  v.(string),
 			})
-		case "redirect_uris":
-			uris := toStringArray(v)
-			for _, uri := range uris {
-				client.RedirectURIs = append(client.RedirectURIs, OidcClientRedirectURI{
-					RedirectURI: uri,
-				})
-			}
-		case "response_types":
-			response_types := toStringArray(v)
-			for _, response_type := range response_types {
-				client.ResponseTypes = append(client.ResponseTypes, OidcClientResponseType{
-					ResponseType: response_type,
-				})
-			}
-		case "grant_types":
-			grant_types := toStringArray(v)
-			for _, grant_type := range grant_types {
-				client.GrantTypes = append(client.GrantTypes, OidcClientGrantType{
-					GrantType: grant_type,
-				})
-			}
-		case "contacts":
-			contacts := toStringArray(v)
-			for _, contact := range contacts {
-				client.Contacts = append(client.Contacts, OidcClientContact{
-					Contact: contact,
-				})
-			}
-		case "default_acr_values":
-			acr_values := toStringArray(v)
-			for _, acr_value := range acr_values {
-				client.DefaultACRValues = append(client.DefaultACRValues, OidcClientDefaultACRValue{
-					ACRValue: acr_value,
-				})
-			}
-		case "request_uris":
-			uris := toStringArray(v)
-			for _, uri := range uris {
-				client.RequestURIs = append(client.RequestURIs, OidcClientRequestURI{
-					RequestURI: uri,
-				})
-			}
 		}
 	}
 
@@ -209,19 +142,11 @@ func BuildOpenIDClient(c *gin.Context) OidcClient {
 	 */
 
 	if len(client.ResponseTypes) == 0 {
-		client.ResponseTypes = []OidcClientResponseType{
-			{
-				ResponseType: "code",
-			},
-		}
+		client.ResponseTypes = []string{"code"}
 	}
 
 	if len(client.GrantTypes) == 0 {
-		client.GrantTypes = []OidcClientGrantType{
-			{
-				GrantType: "authorization_code",
-			},
-		}
+		client.GrantTypes = []string{"authorization_code"}
 	}
 
 	if client.ApplicationType == "" {
@@ -242,42 +167,6 @@ func BuildOpenIDClient(c *gin.Context) OidcClient {
 	}
 
 	return client
-}
-
-func (client *OidcClient) GetRedirectURIs() []string {
-	res := []string{}
-	for _, redirectURI := range client.RedirectURIs {
-		res = append(res, redirectURI.RedirectURI)
-	}
-
-	return res
-}
-
-func (client *OidcClient) GetRequestURIs() []string {
-	res := []string{}
-	for _, requestURI := range client.RequestURIs {
-		res = append(res, requestURI.RequestURI)
-	}
-
-	return res
-}
-
-func (client *OidcClient) GetResponseTypes() []string {
-	res := []string{}
-	for _, responseType := range client.ResponseTypes {
-		res = append(res, responseType.ResponseType)
-	}
-
-	return res
-}
-
-func (client *OidcClient) GetGrantTypes() []string {
-	res := []string{}
-	for _, grantType := range client.GrantTypes {
-		res = append(res, grantType.GrantType)
-	}
-
-	return res
 }
 
 func (client *OidcClient) GetLogoURI(locale string) string {
@@ -329,8 +218,8 @@ func (client *OidcClient) GetTosURI(locale string) string {
 }
 
 func (client *OidcClient) CanRedirectTo(uri string) bool {
-	fmt.Printf("ALLOWED: %v\nSent: %s\n", client.GetRedirectURIs(), uri)
-	return utils.Contains(client.GetRedirectURIs(), uri)
+	fmt.Printf("ALLOWED: %v\nSent: %s\n", client.RedirectURIs, uri)
+	return utils.Contains(client.RedirectURIs, uri)
 }
 
 func validateURI(uri string) error {
@@ -360,12 +249,12 @@ func LoadClient(clientId string) OidcClient {
 }
 
 func (client *OidcClient) Validate() error {
-	redirectURIs := client.GetRedirectURIs()
+	redirectURIs := client.RedirectURIs
 	if err := validateURIArray(redirectURIs); err != nil {
 		return err
 	}
 
-	grantTypes := client.GetGrantTypes()
+	grantTypes := client.GrantTypes
 
 	responseGrantsDependencies := map[string][]string{
 		"code":                {"authorization_code"},
@@ -376,7 +265,7 @@ func (client *OidcClient) Validate() error {
 		"code token id_token": {"authorization_code", "implicit"},
 	}
 
-	for _, responseType := range client.GetResponseTypes() {
+	for _, responseType := range client.ResponseTypes {
 		switch responseType {
 		case "code", "id_token", "token id_token", "code id_token", "code token", "code token id_token":
 		default:
@@ -439,7 +328,7 @@ func (client *OidcClient) Validate() error {
 		}
 	}
 
-	if err := validateURIArray(client.GetRequestURIs()); err != nil {
+	if err := validateURIArray(client.RequestURIs); err != nil {
 		return err
 	}
 

@@ -7,12 +7,6 @@ func Migrate(db *gorm.DB) {
 		&User{},
 
 		&OidcClient{},
-		&OidcClientRedirectURI{},
-		&OidcClientResponseType{},
-		&OidcClientGrantType{},
-		&OidcClientContact{},
 		&OidcClientLocalizedDetail{},
-		&OidcClientDefaultACRValue{},
-		&OidcClientRequestURI{},
 	)
 }
