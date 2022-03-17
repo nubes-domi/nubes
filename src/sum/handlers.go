@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"io/ioutil"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"nubes/sum/db"
@@ -227,7 +226,7 @@ func authorizationStart(c *gin.Context) {
 	request := buildAuthorizationRequest(c)
 
 	client := db.LoadClient(request.ClientID)
-	if !client.CanRedirectTo(request.RedirectURI) {
+	if !utils.Contains(client.RedirectURIs, request.RedirectURI) {
 		c.HTML(http.StatusOK, "error.html", gin.H{
 			"error": "The application specified a Redirect URI which has not been whitelisted.",
 		})
@@ -244,6 +243,7 @@ func authorizationStart(c *gin.Context) {
 		policyUri := client.GetPolicyURI("")
 		tosUri := client.GetTosURI("")
 		c.HTML(http.StatusOK, "new_session.html", gin.H{
+			"client":  client,
 			"request": request,
 			"logo":    logo,
 			"policy":  policyUri,
@@ -253,10 +253,7 @@ func authorizationStart(c *gin.Context) {
 }
 
 func random128() string {
-	buffer := make([]byte, 12)
-	rand.Read(buffer)
-
-	return base64.URLEncoding.EncodeToString(buffer)
+	return base64.URLEncoding.EncodeToString(utils.RandBytes(12))
 }
 
 func generateAuthorizationCode(subject, nonce, clientId string) string {
@@ -283,6 +280,18 @@ func generateAuthorizationCode(subject, nonce, clientId string) string {
 }
 
 func authorizationSubmit(c *gin.Context) {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+
+	user, ok := db.FindUserByUsername(username)
+	if !ok {
+		log.Panicf("Could not find the user")
+	}
+
+	if !user.VerifyPassword(password) {
+		log.Panicf("Password does not match")
+	}
+
 	redirectURI := c.PostForm("redirect_uri")
 	state := c.PostForm("state")
 

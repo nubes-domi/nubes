@@ -169,57 +169,40 @@ func BuildOpenIDClient(c *gin.Context) OidcClient {
 	return client
 }
 
-func (client *OidcClient) GetLogoURI(locale string) string {
+func (client *OidcClient) getLocalizedDetail(field, locale string) string {
 	row := OidcClientLocalizedDetail{}
 
-	tx := DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "logo_uri", locale)
+	tx := DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, field, locale)
 	if tx.Error == nil {
 		return row.Value
 	}
 
-	tx = DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "logo_uri", "")
+	tx = DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, field, "")
 	if tx.Error == nil {
 		return row.Value
 	}
 
 	return ""
+}
+
+func (client *OidcClient) GetClientName(locale string) string {
+	return client.getLocalizedDetail("client_name", locale)
+}
+
+func (client *OidcClient) GetClientURI(locale string) string {
+	return client.getLocalizedDetail("client_uri", locale)
+}
+
+func (client *OidcClient) GetLogoURI(locale string) string {
+	return client.getLocalizedDetail("logo_uri", locale)
 }
 
 func (client *OidcClient) GetPolicyURI(locale string) string {
-	row := OidcClientLocalizedDetail{}
-
-	tx := DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "policy_uri", locale)
-	if tx.Error == nil {
-		return row.Value
-	}
-
-	tx = DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "policy_uri", "")
-	if tx.Error == nil {
-		return row.Value
-	}
-
-	return ""
+	return client.getLocalizedDetail("policy_uri", locale)
 }
 
 func (client *OidcClient) GetTosURI(locale string) string {
-	row := OidcClientLocalizedDetail{}
-
-	tx := DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "tos_uri", locale)
-	if tx.Error == nil {
-		return row.Value
-	}
-
-	tx = DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, "tos_uri", "")
-	if tx.Error == nil {
-		return row.Value
-	}
-
-	return ""
-}
-
-func (client *OidcClient) CanRedirectTo(uri string) bool {
-	fmt.Printf("ALLOWED: %v\nSent: %s\n", client.RedirectURIs, uri)
-	return utils.Contains(client.RedirectURIs, uri)
+	return client.getLocalizedDetail("tos_uri", locale)
 }
 
 func validateURI(uri string) error {

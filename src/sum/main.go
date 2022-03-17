@@ -61,5 +61,7 @@ func main() {
 
 	router.GET("/openid/userinfo", userinfo)
 
+	router.Static("/assets", "./assets")
+
 	router.Run("localhost:8080")
 }
