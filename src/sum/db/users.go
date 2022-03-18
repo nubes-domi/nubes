@@ -1,19 +1,76 @@
 package db
 
 import (
-	"bytes"
-	"encoding/base64"
+	"errors"
+	"log"
 	"nubes/sum/utils"
-	"strings"
 	"time"
 
 	"gorm.io/gorm"
 )
 
+type UserRepository struct {
+	handle *gorm.DB
+}
+
+func (db *Database) Users() *UserRepository {
+	return &UserRepository{db.handle}
+}
+
 type User struct {
 	gorm.Model
 	Username       string
 	PasswordDigest string
+	IsAdmin        bool
+}
+
+func (u *UserRepository) Count() int64 {
+	var count int64
+	u.handle.Model(&User{}).Count(&count)
+
+	return count
+}
+
+func (u *UserRepository) FindById(id int) (*User, error) {
+	user := User{}
+
+	res := u.handle.First(&user, id)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return &User{}, res.Error
+	} else if res.Error != nil {
+		log.Panicf("Could not load user: %v", res.Error)
+	}
+
+	return &user, nil
+}
+
+func (u UserRepository) FindByCredentials(identifier, password string) (*User, error) {
+	user := User{}
+
+	res := u.handle.First(&user, "username = ?", identifier)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return &User{}, res.Error
+	} else if res.Error != nil {
+		log.Panicf("Could not load user: %v", res.Error)
+	}
+
+	if !user.VerifyPassword(password) {
+		return &User{}, errors.New("Invalid username or password")
+	}
+
+	return &user, nil
+}
+
+func (u *UserRepository) Create(user *User) error {
+	return u.handle.Create(&user).Error
+}
+
+func (u *UserRepository) Update(user *User) error {
+	return u.handle.Save(&user).Error
+}
+
+func (u *UserRepository) Delete(user *User) error {
+	return u.handle.Delete(&user).Error
 }
 
 type UserSession struct {
@@ -38,27 +95,10 @@ type UserOidcSession struct {
 	CodeDigest   string
 }
 
-func FindUserByUsername(username string) (User, bool) {
-	user := User{}
-
-	res := DB.First(&user, "username = ?", username)
-	if res.Error != nil {
-		return user, false
-	}
-
-	return user, true
-}
-
 func (u *User) SetPassword(password string) {
 	u.PasswordDigest = utils.HashPassword(password)
 }
 
 func (u *User) VerifyPassword(password string) bool {
-	pieces := strings.Split(u.PasswordDigest, "$")
-
-	seed, _ := base64.RawStdEncoding.DecodeString(pieces[1])
-	expected, _ := base64.RawStdEncoding.DecodeString(pieces[0])
-	actual := utils.HashPasswordWithSeed(password, seed)
-
-	return bytes.Equal(actual, expected)
+	return utils.VerifyPassword(password, u.PasswordDigest)
 }

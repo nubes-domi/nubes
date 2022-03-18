@@ -45,7 +45,7 @@ func PrepareKeys() {
 
 func main() {
 	PrepareKeys()
-	db.Init()
+	db.InitDatabase()
 
 	router := gin.Default()
 	router.LoadHTMLFiles("new_session.html", "error.html")

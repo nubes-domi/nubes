@@ -1,8 +1,8 @@
 package db
 
 import (
-	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -18,15 +18,24 @@ import (
 	"gorm.io/gorm/utils"
 )
 
-type SimpleStringArray []string
-
-func (n *SimpleStringArray) Scan(value interface{}) error {
-	*n = strings.Split(string(value.(string)), "|")
-	return nil
+type OidcClientRepository struct {
+	handle *gorm.DB
 }
 
-func (n *SimpleStringArray) Value() (driver.Value, error) {
-	return driver.Value(strings.Join(*n, "|")), nil
+func (db *Database) OidcClients() *OidcClientRepository {
+	return &OidcClientRepository{db.handle}
+}
+
+func (u *OidcClientRepository) Create(client *OidcClient) error {
+	return u.handle.Create(&client).Error
+}
+
+func (u *OidcClientRepository) Update(client *OidcClient) error {
+	return u.handle.Save(&client).Error
+}
+
+func (u *OidcClientRepository) Delete(client *OidcClient) error {
+	return u.handle.Delete(&client).Error
 }
 
 type OidcClient struct {
@@ -54,12 +63,12 @@ type OidcClient struct {
 	DefaultMaxAge                     int                         `json:"default_max_age"`
 	RequireAuthTime                   bool                        `json:"require_auth_time"`
 	InitiateLoginURI                  string                      `json:"initiate_login_uri"`
-	RedirectURIs                      SimpleStringArray           `gorm:"type:text" json:"redirect_uris"`
-	ResponseTypes                     SimpleStringArray           `gorm:"type:text" json:"response_types"`
-	GrantTypes                        SimpleStringArray           `gorm:"type:text" json:"grant_types"`
-	Contacts                          SimpleStringArray           `gorm:"type:text" json:"contacts"`
-	DefaultACRValues                  SimpleStringArray           `gorm:"type:text" json:"default_acr_values"`
-	RequestURIs                       SimpleStringArray           `gorm:"type:text" json:"request_uris"`
+	RedirectURIs                      pipeStringArray             `gorm:"type:text" json:"redirect_uris"`
+	ResponseTypes                     pipeStringArray             `gorm:"type:text" json:"response_types"`
+	GrantTypes                        pipeStringArray             `gorm:"type:text" json:"grant_types"`
+	Contacts                          pipeStringArray             `gorm:"type:text" json:"contacts"`
+	DefaultACRValues                  pipeStringArray             `gorm:"type:text" json:"default_acr_values"`
+	RequestURIs                       pipeStringArray             `gorm:"type:text" json:"request_uris"`
 	LocalizedDetails                  []OidcClientLocalizedDetail `json:"-"`
 }
 
@@ -70,17 +79,6 @@ type OidcClientLocalizedDetail struct {
 	Locale       string
 	Field        string
 	Value        string
-}
-
-func toStringArray(field interface{}) []string {
-	asArray := field.([]interface{})
-	asStrings := []string{}
-
-	for _, s := range asArray {
-		asStrings = append(asStrings, s.(string))
-	}
-
-	return asStrings
 }
 
 func BuildOpenIDClient(c *gin.Context) OidcClient {
@@ -172,14 +170,18 @@ func BuildOpenIDClient(c *gin.Context) OidcClient {
 func (client *OidcClient) getLocalizedDetail(field, locale string) string {
 	row := OidcClientLocalizedDetail{}
 
-	tx := DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, field, locale)
-	if tx.Error == nil {
+	res := DB.handle.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, field, locale)
+	if res.Error == nil {
 		return row.Value
+	} else if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Panicf("Could not retrieve OIDC Client localized detail: %v", res.Error)
 	}
 
-	tx = DB.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, field, "")
-	if tx.Error == nil {
+	res = DB.handle.First(&row, "oidc_client_id = ? AND field = ? AND locale = ?", client.ID, field, "")
+	if res.Error == nil {
 		return row.Value
+	} else if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Panicf("Could not retrieve OIDC Client localized detail: %v", res.Error)
 	}
 
 	return ""
@@ -223,7 +225,7 @@ func validateURIArray(uris []string) error {
 func LoadClient(clientId string) OidcClient {
 	client := OidcClient{}
 
-	res := DB.Preload(clause.Associations).First(&client, "id = ?", clientId)
+	res := DB.handle.Preload(clause.Associations).First(&client, "id = ?", clientId)
 	if res.Error != nil {
 		log.Panicf("Error while Loading client: %v", res.Error)
 	}

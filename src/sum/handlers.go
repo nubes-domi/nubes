@@ -66,7 +66,7 @@ type RegistrationResponse struct {
 
 func registration(c *gin.Context) {
 	client := db.BuildOpenIDClient(c)
-	db.DB.Create(&client)
+	db.DB.OidcClients().Create(&client)
 
 	c.IndentedJSON(http.StatusCreated, RegistrationResponse{
 		ClientID:              client.ID,
@@ -283,13 +283,9 @@ func authorizationSubmit(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
-	user, ok := db.FindUserByUsername(username)
-	if !ok {
+	_, err := db.DB.Users().FindByCredentials(username, password)
+	if err != nil {
 		log.Panicf("Could not find the user")
-	}
-
-	if !user.VerifyPassword(password) {
-		log.Panicf("Password does not match")
 	}
 
 	redirectURI := c.PostForm("redirect_uri")
