@@ -38,6 +38,6 @@ func InitDatabase() {
 		log.Panicf("Could not open database")
 	}
 
-	DB := Database{handle}
+	DB = Database{handle}
 	Migrate(DB.handle)
 }

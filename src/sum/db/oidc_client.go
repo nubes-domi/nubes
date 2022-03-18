@@ -12,7 +12,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/jwx/jwk"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/utils"
@@ -24,6 +23,19 @@ type OidcClientRepository struct {
 
 func (db *Database) OidcClients() *OidcClientRepository {
 	return &OidcClientRepository{db.handle}
+}
+
+func (u *OidcClientRepository) FindById(id string) (*OidcClient, error) {
+	client := OidcClient{}
+
+	res := u.handle.First(&client, "id = ?", id)
+	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		return &OidcClient{}, res.Error
+	} else if res.Error != nil {
+		log.Panicf("Could not load client: %v", res.Error)
+	}
+
+	return &client, nil
 }
 
 func (u *OidcClientRepository) Create(client *OidcClient) error {
@@ -46,7 +58,7 @@ type OidcClient struct {
 	ClientSecret                      string                      `json:"client_secret" gorm:"-"`
 	ApplicationType                   string                      `json:"application_type"`
 	JwksURI                           string                      `json:"jwks_uri"`
-	Jwks                              string                      `json:"-"`
+	Jwks                              jwkSet                      `json:"jwks"`
 	SectorIdentifierURI               string                      `json:"sector_identifier_uri"`
 	SubjectType                       string                      `json:"subject_type"`
 	IDTokenSignedResponseAlg          string                      `json:"id_token_signed_response_alg"`
@@ -110,16 +122,6 @@ func BuildOpenIDClient(c *gin.Context) OidcClient {
 		key := localised[0]
 
 		switch key {
-		case "jwks":
-			// value is a nested object, make sure it is a valid JWK and store it as a JSON string
-			plain, _ := json.Marshal(v)
-			_, err = jwk.Parse(plain)
-			if err != nil {
-				log.Panicf("Invalid JWK object")
-			}
-
-			client.Jwks = string(plain)
-
 		case "client_name", "logo_uri", "client_uri", "policy_uri", "tos_uri":
 			// these fields are potentially localised
 			locale := ""
@@ -302,7 +304,7 @@ func (client *OidcClient) Validate() error {
 			return err
 		}
 
-		if len(client.Jwks) != 0 {
+		if client.Jwks.Set.Len() != 0 {
 			return fmt.Errorf("RP cannot provide both jwks_uri and jwks")
 		}
 	}

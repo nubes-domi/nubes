@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/lestrrat-go/jwx/jwt"
@@ -252,14 +252,10 @@ func authorizationStart(c *gin.Context) {
 	}
 }
 
-func random128() string {
-	return base64.URLEncoding.EncodeToString(utils.RandBytes(12))
-}
-
 func generateAuthorizationCode(subject, nonce, clientId string) string {
 	token, err := jwt.NewBuilder().
 		Expiration(time.Now().Add(time.Minute*10)).
-		JwtID(random128()).
+		JwtID(uuid.New().String()).
 		Subject(subject).
 		Audience([]string{"token"}).
 		Issuer("authorization").
@@ -332,7 +328,7 @@ func token(c *gin.Context) {
 	signed := utils.JwtSign(id, client.IDTokenSignedResponseAlg, JWKSet)
 
 	c.IndentedJSON(http.StatusCreated, TokenResponse{
-		AccessToken:  random128(),
+		AccessToken:  utils.RandBase64(16),
 		TokenType:    "Bearer",
 		RefreshToken: "",
 		ExpiresIn:    3600,

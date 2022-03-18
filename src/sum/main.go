@@ -43,10 +43,7 @@ func PrepareKeys() {
 	JWKPublicSet.Add(publicKey)
 }
 
-func main() {
-	PrepareKeys()
-	db.InitDatabase()
-
+func prepareRouter() *gin.Engine {
 	router := gin.Default()
 	router.LoadHTMLFiles("new_session.html", "error.html")
 
@@ -63,5 +60,13 @@ func main() {
 
 	router.Static("/assets", "./assets")
 
+	return router
+}
+
+func main() {
+	PrepareKeys()
+	db.InitDatabase()
+
+	router := prepareRouter()
 	router.Run("localhost:8080")
 }
