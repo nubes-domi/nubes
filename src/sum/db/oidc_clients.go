@@ -25,10 +25,10 @@ func (db *Database) OidcClients() *OidcClientRepository {
 	return &OidcClientRepository{db.handle}
 }
 
-func (u *OidcClientRepository) FindById(id string) (*OidcClient, error) {
+func (r *OidcClientRepository) FindById(id string) (*OidcClient, error) {
 	client := OidcClient{}
 
-	res := u.handle.First(&client, "id = ?", id)
+	res := r.handle.First(&client, "id = ?", id)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &OidcClient{}, res.Error
 	} else if res.Error != nil {
@@ -38,16 +38,16 @@ func (u *OidcClientRepository) FindById(id string) (*OidcClient, error) {
 	return &client, nil
 }
 
-func (u *OidcClientRepository) Create(client *OidcClient) error {
-	return u.handle.Create(&client).Error
+func (r *OidcClientRepository) Create(client *OidcClient) error {
+	return r.handle.Create(&client).Error
 }
 
-func (u *OidcClientRepository) Update(client *OidcClient) error {
-	return u.handle.Save(&client).Error
+func (r *OidcClientRepository) Update(client *OidcClient) error {
+	return r.handle.Save(&client).Error
 }
 
-func (u *OidcClientRepository) Delete(client *OidcClient) error {
-	return u.handle.Delete(&client).Error
+func (r *OidcClientRepository) Delete(client *OidcClient) error {
+	return r.handle.Delete(&client).Error
 }
 
 type OidcClient struct {

@@ -11,21 +11,8 @@
 	<div class="flex align-center justify-center">
 		<div>
 			<h1>Sign in with Nubes</h1>
-			<form action="/openid/authorization" method="POST">
-				<input type="hidden" name="scope" value="{{ .request.Scope }}">
-				<input type="hidden" name="response_type" value="{{ .request.ResponseType }}">
-				<input type="hidden" name="client_id" value="{{ .request.ClientID }}">
-				<input type="hidden" name="redirect_uri" value="{{ .request.RedirectURI }}">
-				<input type="hidden" name="state" value="{{ .request.State }}">
-				<input type="hidden" name="response_mode" value="{{ .request.ResponseMode }}">
-				<input type="hidden" name="nonce" value="{{ .request.Nonce }}">
-				<input type="hidden" name="display" value="{{ .request.Display }}">
-				<input type="hidden" name="prompt" value="{{ .request.Prompt }}">
-				<input type="hidden" name="max_age" value="{{ .request.MaxAge }}">
-				<input type="hidden" name="ui_locales" value="{{ .request.UILocales }}">
-				<input type="hidden" name="id_token_hint" value="{{ .request.IDTokenHint }}">
-				<input type="hidden" name="login_hint" value="{{ .request.LoginHint }}">
-				<input type="hidden" name="acr_values" value="{{ .request.ACRValues }}">
+			<form action="/signin" method="POST">
+				<input type="hidden" name="continue" value="{{ .continue }}">
 				<div class="mb-1">
 					<label class="form-label" for="username">Username</label>
 					<input class="form-control" id="username" name="username" type="text">
@@ -36,31 +23,6 @@
 				</div>
 				<input class="btn" type="submit" value="Sign in">
 			</form>
-		
-			{{ if .client_uri }}
-			<a href="{{ .client_uri }}" rel="noopener noreferrer" target="_blank">
-			{{ end }}
-
-				{{ if .logo }}
-					<img src="{{ .logo }}" />
-				{{ else if .client_name }}
-					<h3>{{ .client_name }}</h3>
-				{{ end }}
-
-			{{ if .client_uri }}
-			</a>
-			{{ end }}
-
-			{{ if .policy }}
-				<a id="policy_uri" rel="noopener noreferrer" target="_blank" href="{{ .policy }}">
-					{{ if .client_name }}{{ .client_name }}{{ end }} Privacy policy
-				</a>
-			{{ end }}
-			{{ if .tos }}
-				<a id="tos_uri" rel="noopener noreferrer" target="_blank" href="{{ .tos }}">
-					{{ if .client_name }}{{ .client_name }}{{ end }} Terms of service
-				</a>
-			{{ end }}
 		</div>
 	</div>
 </body>

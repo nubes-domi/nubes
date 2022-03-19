@@ -6,6 +6,8 @@ import (
 	"nubes/sum/utils"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -24,17 +26,17 @@ type User struct {
 	IsAdmin        bool
 }
 
-func (u *UserRepository) Count() int64 {
+func (r *UserRepository) Count() int64 {
 	var count int64
-	u.handle.Model(&User{}).Count(&count)
+	r.handle.Model(&User{}).Count(&count)
 
 	return count
 }
 
-func (u *UserRepository) FindById(id int) (*User, error) {
+func (r *UserRepository) FindById(id uint) (*User, error) {
 	user := User{}
 
-	res := u.handle.First(&user, id)
+	res := r.handle.First(&user, id)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &User{}, res.Error
 	} else if res.Error != nil {
@@ -44,10 +46,10 @@ func (u *UserRepository) FindById(id int) (*User, error) {
 	return &user, nil
 }
 
-func (u UserRepository) FindByCredentials(identifier, password string) (*User, error) {
+func (r *UserRepository) FindByCredentials(identifier, password string) (*User, error) {
 	user := User{}
 
-	res := u.handle.First(&user, "username = ?", identifier)
+	res := r.handle.First(&user, "username = ?", identifier)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &User{}, res.Error
 	} else if res.Error != nil {
@@ -61,16 +63,16 @@ func (u UserRepository) FindByCredentials(identifier, password string) (*User, e
 	return &user, nil
 }
 
-func (u *UserRepository) Create(user *User) error {
-	return u.handle.Create(&user).Error
+func (r *UserRepository) Create(user *User) error {
+	return r.handle.Create(&user).Error
 }
 
-func (u *UserRepository) Update(user *User) error {
-	return u.handle.Save(&user).Error
+func (r *UserRepository) Update(user *User) error {
+	return r.handle.Save(&user).Error
 }
 
-func (u *UserRepository) Delete(user *User) error {
-	return u.handle.Delete(&user).Error
+func (r *UserRepository) Delete(user *User) error {
+	return r.handle.Delete(&user).Error
 }
 
 func (u *User) SetPassword(password string) {
@@ -81,24 +83,26 @@ func (u *User) VerifyPassword(password string) bool {
 	return utils.VerifyPassword(password, u.PasswordDigest)
 }
 
-type UserSession struct {
-	ID        string `gorm:"primaryKey"`
-	CreatedAt time.Time
-	UserID    int
-	UserAgent string
-	IPAddress string
+func (u *User) NewSession(c *gin.Context) UserSession {
+	return UserSession{
+		ID:        uuid.New().String(),
+		UserID:    u.ID,
+		UserAgent: c.Request.UserAgent(),
+		IPAddress: c.ClientIP(),
+		ExpiresAt: time.Now().Add(time.Duration(time.Now().Year()) * 10),
+	}
 }
 
 type UserOidcScopes struct {
 	gorm.Model
-	UserID       int
+	UserID       uint
 	OidcClientID string
 	Scope        string
 }
 
 type UserOidcSession struct {
 	gorm.Model
-	UserID       int
+	UserID       uint
 	OidcClientID string
 	CodeDigest   string
 }

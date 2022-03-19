@@ -2,6 +2,8 @@ package utils
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
 	"log"
@@ -12,8 +14,11 @@ import (
 	"github.com/lestrrat-go/jwx/jwt"
 )
 
-func getKeyForSigning(set jwk.Set, algorithm string) jwk.Key {
-	for it := set.Iterate(context.Background()); it.Next(context.Background()); {
+var JWKSet jwk.Set
+var JWKPublicSet jwk.Set
+
+func getKeyForSigning(algorithm string) jwk.Key {
+	for it := JWKSet.Iterate(context.Background()); it.Next(context.Background()); {
 		pair := it.Pair()
 		key := pair.Value.(jwk.Key)
 
@@ -37,7 +42,7 @@ func getKeyForSigning(set jwk.Set, algorithm string) jwk.Key {
 	return nil
 }
 
-func JwtSign(token jwt.Token, algorithm string, keyBundle jwk.Set) string {
+func JwtSign(token jwt.Token, algorithm string) string {
 	switch algorithm {
 	case "none":
 		marshalled, err := json.Marshal(token)
@@ -50,7 +55,7 @@ func JwtSign(token jwt.Token, algorithm string, keyBundle jwk.Set) string {
 		// {"alg":"none"}
 		return "eyJhbGciOiJub25lIn0." + encoded + "."
 	case "RS256", "RS384", "RS512", "HS256", "HS384", "HS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512":
-		key := getKeyForSigning(keyBundle, algorithm)
+		key := getKeyForSigning(algorithm)
 
 		jwsHeaders := jws.NewHeaders()
 		jwsHeaders.Set("kid", key.KeyID())
@@ -65,4 +70,37 @@ func JwtSign(token jwt.Token, algorithm string, keyBundle jwk.Set) string {
 		log.Panicf("Unrecognized signing algorithm %s", algorithm)
 		return ""
 	}
+}
+
+func JwtVerify(serialized string) (jwt.Token, error) {
+	return jwt.Parse([]byte(serialized), jwt.WithKeySet(JWKPublicSet), jwt.InferAlgorithmFromKey(true))
+}
+
+func PrepareKeys() {
+	var err error
+
+	JWKSet = jwk.NewSet()
+	JWKPublicSet = jwk.NewSet()
+
+	RSAKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Panicf("failed to generate new RSA key: %v\n", err)
+	}
+
+	key, err := jwk.New(RSAKey)
+	if err != nil {
+		log.Panicf("failed to put RSA key into JWK: %v\n", err)
+	}
+
+	key.Set("use", "sig")
+	key.Set("kid", "deadbeef")
+
+	publicKey, err := key.PublicKey()
+	if err != nil {
+		log.Panicf("failed to get public key: %v", err)
+		return
+	}
+
+	JWKSet.Add(key)
+	JWKPublicSet.Add(publicKey)
 }

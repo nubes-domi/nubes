@@ -1,63 +1,50 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"log"
 	"nubes/sum/db"
+	"nubes/sum/oidc"
+	"nubes/sum/sessions"
+	"nubes/sum/users"
+	"nubes/sum/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lestrrat-go/jwx/jwk"
 )
-
-var RSAKey *rsa.PrivateKey
-
-func PrepareKeys() {
-	var err error
-
-	JWKSet = jwk.NewSet()
-	JWKPublicSet = jwk.NewSet()
-
-	RSAKey, err = rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		log.Panicf("failed to generate new RSA key: %s\n", err)
-	}
-
-	key, err := jwk.New(RSAKey)
-	if err != nil {
-		log.Panicf("failed to JWK from RSA: %s\n", err)
-	}
-
-	key.Set("use", "sig")
-	key.Set("kid", "deadbeef")
-
-	JWKSet.Add(key)
-
-	publicKey, err := key.PublicKey()
-	if err != nil {
-		log.Panicf("expected jwk.SymmetricKey, got %T\n", key)
-		return
-	}
-
-	JWKSet.Add(key)
-	JWKPublicSet.Add(publicKey)
-}
 
 func prepareRouter() *gin.Engine {
 	router := gin.Default()
+
+	// Set some shared context
+	router.Use(func(c *gin.Context) {
+		c.Set("db", &db.DB)
+	})
+
+	router.Use(sessions.Middleware)
+
 	router.LoadHTMLFiles("new_session.html", "error.html")
 
-	router.GET("/.well-known/openid-configuration", openidConfiguration)
-	router.GET("/openid/jwks", jwks)
-	router.POST("/openid/registration", registration)
+	router.GET("/.well-known/openid-configuration", oidc.Discovery)
+	router.GET("/openid/jwks", oidc.Jwks)
+	router.POST("/openid/registration", oidc.Registration)
 
-	router.GET("/openid/authorization", authorizationStart)
-	router.POST("/openid/authorization", authorizationSubmit)
+	router.GET("/openid/authorization", oidc.CreateAuthorizationRequest)
+	router.GET("/openid/authorization/:id", sessions.EnsureSignedIn, oidc.ShowAuthorizationRequest)
+	router.POST("/openid/authorization/:id", oidc.ConfirmAuthorizationRequest)
 
-	router.POST("/openid/token", token)
+	router.POST("/openid/token", oidc.Token)
 
-	router.GET("/openid/userinfo", userinfo)
-	router.POST("/openid/userinfo", userinfo)
+	router.GET("/openid/userinfo", oidc.Userinfo)
+	router.POST("/openid/userinfo", oidc.Userinfo)
+
+	router.GET("/signin", sessions.New)
+	router.POST("/signin", sessions.Create)
+
+	usersNamespace := router.Group("/users", sessions.EnsureSignedIn)
+
+	usersNamespace.GET("/", users.Index)
+	usersNamespace.POST("/", users.Create)
+	usersNamespace.GET("/:id", users.Show)
+	usersNamespace.POST("/:id", users.Update)
+	usersNamespace.DELETE("/:id", users.Delete)
 
 	router.Static("/assets", "./assets")
 
@@ -65,7 +52,7 @@ func prepareRouter() *gin.Engine {
 }
 
 func main() {
-	PrepareKeys()
+	utils.PrepareKeys()
 	db.InitDatabase()
 
 	router := prepareRouter()
