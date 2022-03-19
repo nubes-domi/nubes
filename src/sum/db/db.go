@@ -2,6 +2,7 @@ package db
 
 import (
 	"log"
+	"nubes/sum/utils"
 	"os"
 	"path"
 
@@ -40,4 +41,14 @@ func InitDatabase() {
 
 	DB = Database{handle}
 	Migrate(DB.handle)
+
+	if os.Getenv("NUBES_DEV") != "" {
+		// Create user for local development
+		if DB.Users().Count() == 0 {
+			DB.Users().Create(&User{
+				Username:       "test",
+				PasswordDigest: utils.HashPassword("test"),
+			})
+		}
+	}
 }

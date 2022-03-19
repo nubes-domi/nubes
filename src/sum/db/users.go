@@ -73,6 +73,14 @@ func (u *UserRepository) Delete(user *User) error {
 	return u.handle.Delete(&user).Error
 }
 
+func (u *User) SetPassword(password string) {
+	u.PasswordDigest = utils.HashPassword(password)
+}
+
+func (u *User) VerifyPassword(password string) bool {
+	return utils.VerifyPassword(password, u.PasswordDigest)
+}
+
 type UserSession struct {
 	ID        string `gorm:"primaryKey"`
 	CreatedAt time.Time
@@ -93,12 +101,4 @@ type UserOidcSession struct {
 	UserID       int
 	OidcClientID string
 	CodeDigest   string
-}
-
-func (u *User) SetPassword(password string) {
-	u.PasswordDigest = utils.HashPassword(password)
-}
-
-func (u *User) VerifyPassword(password string) bool {
-	return utils.VerifyPassword(password, u.PasswordDigest)
 }

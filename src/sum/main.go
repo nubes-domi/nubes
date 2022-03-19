@@ -57,6 +57,7 @@ func prepareRouter() *gin.Engine {
 	router.POST("/openid/token", token)
 
 	router.GET("/openid/userinfo", userinfo)
+	router.POST("/openid/userinfo", userinfo)
 
 	router.Static("/assets", "./assets")
 

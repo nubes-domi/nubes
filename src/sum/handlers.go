@@ -31,7 +31,7 @@ func openidConfiguration(c *gin.Context) {
 		UserinfoEndpoint:                       baseURI(c) + "/openid/userinfo",
 		JwksURI:                                baseURI(c) + "/openid/jwks",
 		RegistrationEndpoint:                   baseURI(c) + "/openid/registration",
-		ScopesSupported:                        []string{"openid"},
+		ScopesSupported:                        []string{"openid", "profile", "email", "address", "phone"},
 		ResponseTypesSupported:                 []string{"code", "id_token", "token id_token"},
 		ResponseModesSupported:                 []string{"query", "fragment"},
 		GrantTypesSupported:                    []string{"authorization_code", "implicit"},
