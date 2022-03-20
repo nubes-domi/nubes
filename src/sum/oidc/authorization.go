@@ -8,6 +8,7 @@ import (
 	"nubes/sum/db"
 	"nubes/sum/utils"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -86,7 +87,7 @@ func ConfirmAuthorizationRequest(c *gin.Context) {
 	}
 
 	if auth.HasResponseType("token") {
-		response["access_token"] = utils.RandBase64(12)
+		response["access_token"] = generateAccessToken(auth.ClientID, auth.UserID, auth.Scope)
 		response["token_type"] = "Bearer"
 	}
 
@@ -97,6 +98,26 @@ func ConfirmAuthorizationRequest(c *gin.Context) {
 	} else {
 		log.Panicf("Invalid response mode %s", auth.GetResponseMode())
 	}
+}
+
+func generateAccessToken(clientID string, userID uint, scope string) string {
+	secret := utils.RandBase64(32)
+
+	token := db.OidcAccessToken{
+		ID:           utils.RandBase64(16),
+		ExpiresAt:    time.Now().Add(time.Hour),
+		ClientID:     clientID,
+		SecretDigest: utils.Sha256String([]byte(secret)),
+		UserID:       userID,
+		Scope:        strings.Split(scope, " "),
+	}
+
+	err := db.DB.OidcAccessTokens().Create(&token)
+	if err != nil {
+		log.Panicf("%v", err)
+	}
+
+	return token.ID + ":" + secret
 }
 
 func buildAuthorizationRequest(c *gin.Context) db.OidcAuthorizationRequest {

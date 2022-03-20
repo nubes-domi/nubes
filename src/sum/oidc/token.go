@@ -33,7 +33,7 @@ func Token(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusCreated, TokenResponse{
-		AccessToken:  utils.RandBase64(16),
+		AccessToken:  generateAccessToken(auth.ClientID, auth.UserID, auth.Scope),
 		TokenType:    "Bearer",
 		RefreshToken: "",
 		ExpiresIn:    3600,
@@ -50,6 +50,12 @@ func generateIdToken(c *gin.Context, auth *db.OidcAuthorizationRequest) string {
 	id.Set(jwt.SubjectKey, fmt.Sprintf("%d", auth.UserID))
 	id.Set(jwt.AudienceKey, auth.ClientID)
 	id.Set("nonce", auth.Nonce)
+
+	currentSession := utils.CtxMustGet[*db.UserSession]("currentSession")
+	id.Set("auth_time", currentSession.UpdatedAt.Unix())
+
+	id.Set("acr", "0")
+	id.Set("amr", []string{"pwd"})
 
 	client := db.LoadClient(auth.ClientID)
 	return utils.JwtSign(id, client.IDTokenSignedResponseAlg)

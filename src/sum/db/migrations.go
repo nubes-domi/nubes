@@ -10,5 +10,6 @@ func Migrate(db *gorm.DB) {
 		&OidcClient{},
 		&OidcClientLocalizedDetail{},
 		&OidcAuthorizationRequest{},
+		&OidcAccessToken{},
 	)
 }

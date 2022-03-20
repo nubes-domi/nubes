@@ -184,6 +184,18 @@ func BuildOpenIDClient(c *gin.Context) OidcClient {
 		client.SubjectType = "public"
 	}
 
+	if client.UserinfoSignedResponseAlg == "" {
+		client.UserinfoSignedResponseAlg = "none"
+	}
+
+	if client.UserinfoEncryptedResponseAlg == "" {
+		client.UserinfoEncryptedResponseAlg = "none"
+	}
+
+	if client.UserinfoEncryptedResponseEnc == "" {
+		client.UserinfoEncryptedResponseEnc = "none"
+	}
+
 	return client
 }
 
