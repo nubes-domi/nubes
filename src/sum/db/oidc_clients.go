@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"nubes/sum/utils"
 	"strings"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"gorm.io/gorm/utils"
 )
 
 type OidcClientRepository struct {
@@ -35,11 +35,14 @@ func (r *OidcClientRepository) FindById(id string) (*OidcClient, error) {
 		log.Panicf("Could not load client: %v", res.Error)
 	}
 
+	client.ClientIDIssuedAt = client.CreatedAt.Unix()
 	return &client, nil
 }
 
 func (r *OidcClientRepository) Create(client *OidcClient) error {
-	return r.handle.Create(&client).Error
+	err := r.handle.Create(&client).Error
+	client.ClientIDIssuedAt = client.CreatedAt.Unix()
+	return err
 }
 
 func (r *OidcClientRepository) Update(client *OidcClient) error {
@@ -50,38 +53,49 @@ func (r *OidcClientRepository) Delete(client *OidcClient) error {
 	return r.handle.Delete(&client).Error
 }
 
+// Note, the ClientSecret is stored plaintext, not hashed.
+// This is terrible, but the OpenID Connect Registration specification specifies
+// that clients must be able to retrieve the ClientSecret through the registration_client_uri
 type OidcClient struct {
-	ID                                string                      `gorm:"primaryKey"`
-	CreatedAt                         time.Time                   `json:"-"`
-	UpdatedAt                         time.Time                   `json:"-"`
-	ClientSecretDigest                string                      `json:"-"`
-	ClientSecret                      string                      `json:"client_secret" gorm:"-"`
-	ApplicationType                   string                      `json:"application_type"`
-	JwksURI                           string                      `json:"jwks_uri"`
-	Jwks                              jwkSet                      `json:"jwks"`
-	SectorIdentifierURI               string                      `json:"sector_identifier_uri"`
-	SubjectType                       string                      `json:"subject_type"`
-	IDTokenSignedResponseAlg          string                      `json:"id_token_signed_response_alg"`
-	IDTokenEncryptedResponseAlg       string                      `json:"id_token_encrypted_response_alg"`
-	IDTokenEncryptedResponseEnc       string                      `json:"id_token_encrypted_response_enc"`
-	UserinfoSignedResponseAlg         string                      `json:"userinfo_signed_response_alg"`
-	UserinfoEncryptedResponseAlg      string                      `json:"userinfo_encrypted_response_alg"`
-	UserinfoEncryptedResponseEnc      string                      `json:"userinfo_encrypted_response_enc"`
-	RequestObjectSignedResponseAlg    string                      `json:"request_object_signed_response_alg"`
-	RequestObjectEncryptedResponseAlg string                      `json:"request_object_encrypted_response_alg"`
-	RequestObjectEncryptedResponseEnc string                      `json:"request_object_encrypted_response_enc"`
-	TokenEndpointAuthMethod           string                      `json:"token_endpoint_auth_method"`
-	TokenEndpointAuthSigningAlg       string                      `json:"token_endpoint_auth_signing_alg"`
-	DefaultMaxAge                     int                         `json:"default_max_age"`
-	RequireAuthTime                   bool                        `json:"require_auth_time"`
-	InitiateLoginURI                  string                      `json:"initiate_login_uri"`
-	RedirectURIs                      pipeStringArray             `gorm:"type:text" json:"redirect_uris"`
-	ResponseTypes                     pipeStringArray             `gorm:"type:text" json:"response_types"`
-	GrantTypes                        pipeStringArray             `gorm:"type:text" json:"grant_types"`
-	Contacts                          pipeStringArray             `gorm:"type:text" json:"contacts"`
-	DefaultACRValues                  pipeStringArray             `gorm:"type:text" json:"default_acr_values"`
-	RequestURIs                       pipeStringArray             `gorm:"type:text" json:"request_uris"`
-	LocalizedDetails                  []OidcClientLocalizedDetail `json:"-"`
+	ID                                string          `json:"client_id" gorm:"primaryKey"`
+	CreatedAt                         time.Time       `json:"-"`
+	UpdatedAt                         time.Time       `json:"-"`
+	ClientSecret                      string          `json:"client_secret"`
+	ClientIDIssuedAt                  int64           `json:"client_id_issued_at" gorm:"-"`
+	ClientSecretExpiresAt             int64           `json:"client_secret_expires_at" gorm:"-"`
+	ApplicationType                   string          `json:"application_type"`
+	JwksURI                           string          `json:"jwks_uri,omitempty"`
+	Jwks                              jwkSet          `gorm:"type:text" json:"jwks,omitempty"`
+	SectorIdentifierURI               string          `json:"sector_identifier_uri,omitempty"`
+	SubjectType                       string          `json:"subject_type"`
+	IDTokenSignedResponseAlg          string          `json:"id_token_signed_response_alg"`
+	IDTokenEncryptedResponseAlg       string          `json:"id_token_encrypted_response_alg,omitempty"`
+	IDTokenEncryptedResponseEnc       string          `json:"id_token_encrypted_response_enc,omitempty"`
+	UserinfoSignedResponseAlg         string          `json:"userinfo_signed_response_alg,omitempty"`
+	UserinfoEncryptedResponseAlg      string          `json:"userinfo_encrypted_response_alg,omitempty"`
+	UserinfoEncryptedResponseEnc      string          `json:"userinfo_encrypted_response_enc,omitempty"`
+	RequestObjectSignedResponseAlg    string          `json:"request_object_signed_response_alg,omitempty"`
+	RequestObjectEncryptedResponseAlg string          `json:"request_object_encrypted_response_alg,omitempty"`
+	RequestObjectEncryptedResponseEnc string          `json:"request_object_encrypted_response_enc,omitempty"`
+	TokenEndpointAuthMethod           string          `json:"token_endpoint_auth_method,omitempty"`
+	TokenEndpointAuthSigningAlg       string          `json:"token_endpoint_auth_signing_alg,omitempty"`
+	DefaultMaxAge                     int             `json:"default_max_age,omitempty"`
+	RequireAuthTime                   bool            `json:"require_auth_time,omitempty"`
+	InitiateLoginURI                  string          `json:"initiate_login_uri,omitempty"`
+	RedirectURIs                      pipeStringArray `gorm:"type:text" json:"redirect_uris"`
+	ResponseTypes                     pipeStringArray `gorm:"type:text" json:"response_types,omitempty"`
+	GrantTypes                        pipeStringArray `gorm:"type:text" json:"grant_types,omitempty"`
+	Contacts                          pipeStringArray `gorm:"type:text" json:"contacts,omitempty"`
+	DefaultACRValues                  pipeStringArray `gorm:"type:text" json:"default_acr_values,omitempty"`
+	RequestURIs                       pipeStringArray `gorm:"type:text" json:"request_uris,omitempty"`
+
+	// For things like client_uri#es
+	LocalizedDetails []OidcClientLocalizedDetail `json:"-"`
+
+	// For the client to make changes
+	RegistrationAccessToken       string `json:"registration_access_token,omitempty" gorm:"-"`
+	RegistrationAccessTokenDigest string `json:"-"`
+	RegistrationClientURI         string `json:"registration_client_uri,omitempty"`
 }
 
 // Handles client_name, logo_uri, client_uri, policy_uri, tos_uri
@@ -94,8 +108,12 @@ type OidcClientLocalizedDetail struct {
 }
 
 func BuildOpenIDClient(c *gin.Context) OidcClient {
-	client := OidcClient{}
-	client.ID = uuid.New().String()
+	client := OidcClient{
+		ID:                      uuid.New().String(),
+		ClientSecret:            utils.RandBase64(48),
+		RegistrationAccessToken: utils.RandBase64(48),
+	}
+	client.RegistrationAccessTokenDigest = utils.Sha256String([]byte(client.RegistrationAccessToken))
 
 	// To parse this request we are binding the body twice (to a well defined json structure and a map)
 	// Gin however will prevent us from doing so.
@@ -209,14 +227,28 @@ func (client *OidcClient) GetTosURI(locale string) string {
 	return client.getLocalizedDetail("tos_uri", locale)
 }
 
-func validateURI(uri string) error {
-	_, err := url.ParseRequestURI(uri)
+func (client *OidcClient) VerifyRegistrationToken(token string) bool {
+	return utils.Sha256String([]byte(token)) == client.RegistrationAccessTokenDigest
+}
+
+func validateURI(uri string, allowFragments bool) error {
+	parsed, err := url.Parse(uri)
+	if err != nil {
+		return err
+	} else if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return errors.New("URI uses invalid scheme")
+	}
+
+	if !allowFragments && parsed.Fragment != "" {
+		return errors.New("URI has fragment")
+	}
+
 	return err
 }
 
-func validateURIArray(uris []string) error {
+func validateURIArray(uris []string, allowFragments bool) error {
 	for _, uri := range uris {
-		if err := validateURI(uri); err != nil {
+		if err := validateURI(uri, allowFragments); err != nil {
 			return err
 		}
 	}
@@ -235,26 +267,36 @@ func LoadClient(clientId string) OidcClient {
 	return client
 }
 
+func (client *OidcClient) ExplodedResponseTypes() []string {
+	result := []string{}
+	for _, v := range client.ResponseTypes {
+		types := strings.Split(v, " ")
+		for _, t := range types {
+			if !utils.Contains(result, t) {
+				result = append(result, t)
+			}
+		}
+	}
+
+	return result
+}
+
 func (client *OidcClient) Validate() error {
-	redirectURIs := client.RedirectURIs
-	if err := validateURIArray(redirectURIs); err != nil {
-		return err
+	if err := validateURIArray(client.RedirectURIs, false); err != nil {
+		return errors.New("invalid_redirect_uri")
 	}
 
 	grantTypes := client.GrantTypes
 
 	responseGrantsDependencies := map[string][]string{
-		"code":                {"authorization_code"},
-		"id_token":            {"implicit"},
-		"token id_token":      {"implicit"},
-		"code id_token":       {"authorization_code", "implicit"},
-		"code token":          {"authorization_code", "implicit"},
-		"code token id_token": {"authorization_code", "implicit"},
+		"code":     {"authorization_code"},
+		"id_token": {"implicit"},
+		"token":    {"implicit"},
 	}
 
-	for _, responseType := range client.ResponseTypes {
+	for _, responseType := range client.ExplodedResponseTypes() {
 		switch responseType {
-		case "code", "id_token", "token id_token", "code id_token", "code token", "code token id_token":
+		case "code", "id_token", "token":
 		default:
 			return fmt.Errorf("Invalid response type %s", responseType)
 		}
@@ -276,14 +318,14 @@ func (client *OidcClient) Validate() error {
 
 	switch client.ApplicationType {
 	case "web":
-		for _, uri := range redirectURIs {
+		for _, uri := range client.RedirectURIs {
 			parsed, _ := url.Parse(uri)
 			if parsed.Scheme != "https" || parsed.Host == "localhost" {
 				return fmt.Errorf("Cannot use %s as Redirect URI for a web client (must be https://<notlocalhost>/<path>)", uri)
 			}
 		}
 	case "native":
-		for _, uri := range redirectURIs {
+		for _, uri := range client.RedirectURIs {
 			parsed, _ := url.Parse(uri)
 			if parsed.Scheme != "http" || parsed.Host != "localhost" {
 				return fmt.Errorf("Cannot use %s as Redirect URI for a native client (must be http://localhost/<path>)", uri)
@@ -300,22 +342,22 @@ func (client *OidcClient) Validate() error {
 	}
 
 	if client.JwksURI != "" {
-		if err := validateURI(client.JwksURI); err != nil {
+		if err := validateURI(client.JwksURI, true); err != nil {
 			return err
 		}
 
-		if client.Jwks.Set.Len() != 0 {
+		if client.Jwks.Set != nil {
 			return fmt.Errorf("RP cannot provide both jwks_uri and jwks")
 		}
 	}
 
 	if client.InitiateLoginURI != "" {
-		if err := validateURI(client.InitiateLoginURI); err != nil {
+		if err := validateURI(client.InitiateLoginURI, true); err != nil {
 			return err
 		}
 	}
 
-	if err := validateURIArray(client.RequestURIs); err != nil {
+	if err := validateURIArray(client.RequestURIs, true); err != nil {
 		return err
 	}
 

@@ -13,5 +13,5 @@ func RandBytes(length int) []byte {
 }
 
 func RandBase64(bytes int) string {
-	return base64.RawURLEncoding.EncodeToString(RandBytes(12))
+	return base64.RawURLEncoding.EncodeToString(RandBytes(bytes))
 }

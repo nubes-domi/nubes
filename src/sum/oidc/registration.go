@@ -18,11 +18,63 @@ type RegistrationResponse struct {
 
 func Registration(c *gin.Context) {
 	client := db.BuildOpenIDClient(c)
-	db.DB.OidcClients().Create(&client)
+	err := client.Validate()
+	if err != nil {
+		result := make(map[string]string)
+		if err.Error() == "invalid_redirect_uri" {
+			result["error"] = err.Error()
+		} else {
+			result["error"] = "invalid_client_metadata"
+			result["error_description"] = err.Error()
+		}
 
-	c.IndentedJSON(http.StatusCreated, RegistrationResponse{
-		ClientID:              client.ID,
-		ClientSecret:          "a-fake-secret",
-		ClientSecretExpiresAt: 0,
-	})
+		c.IndentedJSON(http.StatusBadRequest, result)
+	} else {
+		db.DB.OidcClients().Create(&client)
+		client.RegistrationClientURI = baseURI(c) + "/openid/registration/" + client.ID
+
+		c.IndentedJSON(http.StatusCreated, client)
+	}
+}
+
+func GetClient(c *gin.Context) {
+	id := c.Param("id")
+	client, err := db.DB.OidcClients().FindById(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, map[string]string{
+			"error": "client_not_found",
+		})
+	}
+
+	c.IndentedJSON(http.StatusOK, client)
+}
+
+func DeleteClient(c *gin.Context) {
+	id := c.Param("id")
+	client, err := db.DB.OidcClients().FindById(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, map[string]string{
+			"error": "invalid client id or access token",
+		})
+	}
+
+	if client.VerifyRegistrationToken(getBearer(c)) {
+		db.DB.OidcClients().Delete(client)
+		c.Writer.WriteHeader(http.StatusNoContent)
+	} else {
+		c.IndentedJSON(http.StatusNotFound, map[string]string{
+			"error": "invalid client id or access token",
+		})
+	}
+}
+
+func getBearer(c *gin.Context) string {
+	if len(c.Request.Header["Authorization"]) > 0 {
+		val := c.Request.Header["Authorization"][0]
+		if val[:7] == "Bearer " {
+			return val[7:]
+		}
+	}
+
+	return ""
 }

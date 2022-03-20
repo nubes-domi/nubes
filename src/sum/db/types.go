@@ -23,6 +23,11 @@ type jwkSet struct {
 	Set jwk.Set
 }
 
+func (n jwkSet) MarshalJSON() ([]byte, error) {
+	val, err := n.Value()
+	return []byte(val.(string)), err
+}
+
 func (n *jwkSet) UnmarshalJSON(data []byte) error {
 	set, err := jwk.Parse(data)
 	if err != nil {
@@ -34,15 +39,25 @@ func (n *jwkSet) UnmarshalJSON(data []byte) error {
 }
 
 func (n *jwkSet) Scan(value interface{}) error {
-	set, err := jwk.Parse([]byte(value.(string)))
-	if err != nil {
-		return err
+	val := value.(string)
+	if val != "" {
+		set, err := jwk.Parse([]byte(val))
+		if err != nil {
+			return err
+		}
+		*n = jwkSet{set}
+		return nil
+	} else {
+		*n = jwkSet{nil}
+		return nil
 	}
-	*n = jwkSet{set}
-	return nil
 }
 
 func (n jwkSet) Value() (driver.Value, error) {
+	if n.Set == nil {
+		return "", nil
+	}
+
 	stream, err := json.Marshal(n.Set)
-	return driver.Value(string(stream)), err
+	return string(stream), err
 }

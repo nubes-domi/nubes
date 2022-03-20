@@ -3,6 +3,8 @@ package db
 import (
 	"errors"
 	"log"
+	"nubes/sum/utils"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -16,10 +18,10 @@ func (db *Database) OidcAuthorizationRequests() *OidcAuthorizationRequestReposit
 	return &OidcAuthorizationRequestRepository{db.handle}
 }
 
-func (r *OidcAuthorizationRequestRepository) FindById(id string) (*OidcAuthorizationRequest, error) {
+func (r *OidcAuthorizationRequestRepository) FindByIdAndStage(id string, stage string) (*OidcAuthorizationRequest, error) {
 	client := OidcAuthorizationRequest{}
 
-	res := r.handle.First(&client, "id = ?", id)
+	res := r.handle.First(&client, "id = ? AND stage = ?", id, stage)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &OidcAuthorizationRequest{}, res.Error
 	} else if res.Error != nil {
@@ -46,6 +48,11 @@ type OidcAuthorizationRequest struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
+	// authorization, code
+	Stage string
+	// Stored after consent is granted
+	UserID uint
+
 	ClientID     string `form:"client_id"`
 	Scope        string `form:"scope"`
 	ResponseType string `form:"response_type"`
@@ -64,4 +71,21 @@ type OidcAuthorizationRequest struct {
 	// Form binding only
 	RequestURI string `form:"request_uri" gorm:"-"`
 	Request    string `form:"request" gorm:"-"`
+}
+
+func (r *OidcAuthorizationRequest) HasResponseType(responseType string) bool {
+	types := strings.Split(r.ResponseType, " ")
+	return utils.Contains(types, responseType)
+}
+
+func (r *OidcAuthorizationRequest) GetResponseMode() string {
+	if r.ResponseMode != "" {
+		return r.ResponseMode
+	}
+
+	if r.ResponseType == "code" {
+		return "query"
+	}
+
+	return "fragment"
 }

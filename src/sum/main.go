@@ -25,6 +25,8 @@ func prepareRouter() *gin.Engine {
 	router.GET("/.well-known/openid-configuration", oidc.Discovery)
 	router.GET("/openid/jwks", oidc.Jwks)
 	router.POST("/openid/registration", oidc.Registration)
+	router.GET("/openid/registration/:id", oidc.GetClient)
+	router.DELETE("/openid/registration/:id", oidc.DeleteClient)
 
 	router.GET("/openid/authorization", oidc.CreateAuthorizationRequest)
 	router.GET("/openid/authorization/:id", sessions.EnsureSignedIn, oidc.ShowAuthorizationRequest)

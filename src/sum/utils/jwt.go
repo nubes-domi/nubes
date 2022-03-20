@@ -2,6 +2,9 @@ package utils
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/ed25519"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/base64"
@@ -62,7 +65,7 @@ func JwtSign(token jwt.Token, algorithm string) string {
 
 		signed, err := jwt.Sign(token, jwa.SignatureAlgorithm(algorithm), key, jwt.WithJwsHeaders(jwsHeaders))
 		if err != nil {
-			log.Panicf("Could not sign IDToken: %v", err)
+			log.Panicf("Could not sign JWT: %v", err)
 		}
 
 		return string(signed)
@@ -77,30 +80,86 @@ func JwtVerify(serialized string) (jwt.Token, error) {
 }
 
 func PrepareKeys() {
-	var err error
-
 	JWKSet = jwk.NewSet()
 	JWKPublicSet = jwk.NewSet()
 
-	RSAKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	rsaPriv, rsaPub := RSAKeypair("sig")
+	ecPriv, ecPub := ECKeypair("sig")
+	okpPriv, okpPub := OKPKeypair("sig")
+
+	JWKSet.Add(rsaPriv)
+	JWKSet.Add(ecPriv)
+	JWKSet.Add(okpPriv)
+
+	JWKPublicSet.Add(rsaPub)
+	JWKPublicSet.Add(ecPub)
+	JWKPublicSet.Add(okpPub)
+}
+
+func RSAKeypair(use string) (jwk.Key, jwk.Key) {
+	rsa, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		log.Panicf("failed to generate new RSA key: %v\n", err)
 	}
 
-	key, err := jwk.New(RSAKey)
+	private, err := jwk.New(rsa)
 	if err != nil {
-		log.Panicf("failed to put RSA key into JWK: %v\n", err)
+		log.Panicf("failed to wrap RSA key into JWK: %v\n", err)
 	}
 
-	key.Set("use", "sig")
-	key.Set("kid", "deadbeef")
+	private.Set("use", use)
+	private.Set("kid", Sha256String(rsa.N.Bytes())[:8])
 
-	publicKey, err := key.PublicKey()
+	public, err := private.PublicKey()
 	if err != nil {
 		log.Panicf("failed to get public key: %v", err)
-		return
 	}
 
-	JWKSet.Add(key)
-	JWKPublicSet.Add(publicKey)
+	return private, public
+}
+
+func ECKeypair(use string) (jwk.Key, jwk.Key) {
+	ec, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		log.Panicf("failed to generate new EC key: %v\n", err)
+	}
+
+	private, err := jwk.New(ec)
+	if err != nil {
+		log.Panicf("failed to wrap EC key into JWK: %v\n", err)
+	}
+
+	private.Set("use", use)
+	private.Set("kid", Sha256String(append(ec.X.Bytes(), ec.Y.Bytes()...))[:8])
+
+	public, err := private.PublicKey()
+	if err != nil {
+		log.Panicf("failed to get public key: %v", err)
+	}
+
+	return private, public
+}
+
+func OKPKeypair(use string) (jwk.Key, jwk.Key) {
+	pub, priv, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		log.Panicf("failed to generate new EC key: %v\n", err)
+	}
+
+	private, err := jwk.New(priv)
+	if err != nil {
+		log.Panicf("failed to wrap EC key into JWK: %v\n", err)
+	}
+
+	public, err := jwk.New(pub)
+	if err != nil {
+		log.Panicf("failed to wrap EC key into JWK: %v\n", err)
+	}
+
+	public.Set("use", use)
+	private.Set("use", use)
+	public.Set("kid", Sha256String(pub)[:8])
+	private.Set("kid", Sha256String(pub)[:8])
+
+	return private, public
 }

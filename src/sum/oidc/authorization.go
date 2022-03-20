@@ -8,7 +8,6 @@ import (
 	"nubes/sum/db"
 	"nubes/sum/utils"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -17,6 +16,7 @@ import (
 
 func CreateAuthorizationRequest(c *gin.Context) {
 	request := buildAuthorizationRequest(c)
+	request.Stage = "authorization"
 	db.DB.OidcAuthorizationRequests().Create(&request)
 
 	client, err := db.DB.OidcClients().FindById(request.ClientID)
@@ -38,7 +38,7 @@ func CreateAuthorizationRequest(c *gin.Context) {
 		c.Redirect(302, buildRedirection(request.RedirectURI, map[string]string{
 			"error": "invalid_request",
 			"state": request.State,
-		}))
+		}, "?"))
 	} else {
 		c.Redirect(302, "/openid/authorization/"+request.ID)
 	}
@@ -66,21 +66,37 @@ func ShowAuthorizationRequest(c *gin.Context) {
 
 func ConfirmAuthorizationRequest(c *gin.Context) {
 	id := c.Param("id")
-	auth, _ := db.DB.OidcAuthorizationRequests().FindById(id)
-	redirectURI := auth.RedirectURI
+	auth, _ := db.DB.OidcAuthorizationRequests().FindByIdAndStage(id, "authorization")
 
-	if !strings.Contains(redirectURI, "?") {
-		redirectURI += "?"
-	} else {
-		redirectURI += "&"
+	// Mark this authorization as confirmed, move to "code" phase
+	auth.Stage = "code"
+	auth.UserID = utils.CtxMustGet[*db.User](c, "currentUser").ID
+	db.DB.OidcAuthorizationRequests().Update(auth)
+
+	response := map[string]string{
+		"state": auth.State,
 	}
 
-	db.DB.OidcAuthorizationRequests().Delete(auth)
+	if auth.HasResponseType("code") {
+		response["code"] = generateAuthorizationCode(id)
+	}
 
-	c.Redirect(http.StatusFound, buildRedirection(redirectURI, map[string]string{
-		"state": auth.State,
-		"code":  generateAuthorizationCode("123", auth.Nonce, auth.ClientID),
-	}))
+	if auth.HasResponseType("id_token") {
+		response["id_token"] = generateIdToken(c, auth)
+	}
+
+	if auth.HasResponseType("token") {
+		response["access_token"] = utils.RandBase64(12)
+		response["token_type"] = "Bearer"
+	}
+
+	if auth.GetResponseMode() == "fragment" {
+		c.Redirect(http.StatusFound, buildRedirection(auth.RedirectURI, response, "#"))
+	} else if auth.GetResponseMode() == "query" {
+		c.Redirect(http.StatusFound, buildRedirection(auth.RedirectURI, response, "?"))
+	} else {
+		log.Panicf("Invalid response mode %s", auth.GetResponseMode())
+	}
 }
 
 func buildAuthorizationRequest(c *gin.Context) db.OidcAuthorizationRequest {
@@ -178,31 +194,26 @@ func buildAuthorizationRequest(c *gin.Context) db.OidcAuthorizationRequest {
 	return authRequest
 }
 
-func generateAuthorizationCode(subject, nonce, clientId string) string {
+func generateAuthorizationCode(authorizationRequestId string) string {
 	token, err := jwt.NewBuilder().
-		Expiration(time.Now().Add(time.Minute*10)).
-		JwtID(uuid.New().String()).
-		Subject(subject).
-		Audience([]string{"token"}).
-		Issuer("authorization").
-		Claim("nonce", nonce).
-		Claim("client_id", clientId).
+		JwtID(authorizationRequestId).
+		Issuer("oidc-auth").
 		Build()
 
 	if err != nil {
 		log.Panicf("Could not build a JWT: %v", err)
 	}
 
-	return utils.JwtSign(token, "RS256")
+	return utils.JwtSign(token, "ES256")
 }
 
-func buildRedirection(baseURI string, additionalParams map[string]string) string {
+func buildRedirection(baseURI string, additionalParams map[string]string, separator string) string {
 	if len(additionalParams) == 0 {
 		return baseURI
 	}
 
-	if !strings.Contains(baseURI, "?") {
-		baseURI += "?"
+	if !strings.Contains(baseURI, separator) {
+		baseURI += separator
 	} else {
 		baseURI += "&"
 	}

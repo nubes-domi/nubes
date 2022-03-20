@@ -2,7 +2,9 @@ package utils
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"strings"
 
 	"golang.org/x/crypto/argon2"
@@ -26,4 +28,9 @@ func VerifyPassword(password string, digest string) bool {
 
 func hashPasswordWithSeed(password string, seed []byte) []byte {
 	return argon2.IDKey([]byte(password), seed, 1, 64*1024, 4, 32)
+}
+
+func Sha256String(data []byte) string {
+	hash := sha256.Sum256(data)
+	return hex.EncodeToString(hash[:])
 }
