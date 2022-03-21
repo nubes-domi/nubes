@@ -1,9 +1,13 @@
 package users
 
-import "github.com/gin-gonic/gin"
+import (
+	"nubes/sum/db"
+
+	"github.com/gin-gonic/gin"
+)
 
 func Index(c *gin.Context) {
-
+	db.DB.Users().List("username ASC")
 }
 
 func Create(c *gin.Context) {

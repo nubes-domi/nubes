@@ -1,6 +1,7 @@
 package oidc
 
 import (
+	"log"
 	"net/http"
 	"nubes/sum/db"
 
@@ -30,9 +31,12 @@ func Registration(c *gin.Context) {
 
 		c.IndentedJSON(http.StatusBadRequest, result)
 	} else {
-		db.DB.OidcClients().Create(&client)
-		client.RegistrationClientURI = baseURI(c) + "/openid/registration/" + client.ID
+		err := db.DB.OidcClients().Create(&client)
+		if err != nil {
+			log.Panicf("%v", err)
+		}
 
+		client.RegistrationClientURI = baseURI(c) + "/openid/registration/" + client.ID
 		c.IndentedJSON(http.StatusCreated, client)
 	}
 }

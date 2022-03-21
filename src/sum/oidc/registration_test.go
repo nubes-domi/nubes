@@ -2,7 +2,6 @@ package oidc
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -65,7 +64,6 @@ func TestRegistrationHybrid(t *testing.T) {
 		t.Fail()
 	}
 
-	fmt.Printf("%v\n", body)
 	clientId := body["client_id"].(string)
 	_, err = db.DB.OidcClients().FindById(clientId)
 	if err != nil {

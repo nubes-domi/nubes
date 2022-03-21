@@ -11,10 +11,6 @@ import (
 	"github.com/lestrrat-go/jwx/jwt"
 )
 
-type UserinfoResponse struct {
-	Sub string `json:"sub"`
-}
-
 func Userinfo(c *gin.Context) {
 	accessTokenString := retrieveAccessToken(c)
 	accessToken, err := db.DB.OidcAccessTokens().Find(accessTokenString)

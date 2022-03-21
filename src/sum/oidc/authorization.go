@@ -1,6 +1,9 @@
 package oidc
 
 import (
+	"crypto/sha256"
+	"crypto/sha512"
+	"encoding/base64"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -72,6 +75,7 @@ func ConfirmAuthorizationRequest(c *gin.Context) {
 	// Mark this authorization as confirmed, move to "code" phase
 	auth.Stage = "code"
 	auth.UserID = utils.CtxMustGet[*db.User](c, "currentUser").ID
+	auth.SessionID = utils.CtxMustGet[*db.UserSession](c, "currentSession").ID
 	db.DB.OidcAuthorizationRequests().Update(auth)
 
 	response := map[string]string{
@@ -82,13 +86,23 @@ func ConfirmAuthorizationRequest(c *gin.Context) {
 		response["code"] = generateAuthorizationCode(id)
 	}
 
-	if auth.HasResponseType("id_token") {
-		response["id_token"] = generateIdToken(c, auth)
-	}
-
 	if auth.HasResponseType("token") {
 		response["access_token"] = generateAccessToken(auth.ClientID, auth.UserID, auth.Scope)
 		response["token_type"] = "Bearer"
+	}
+
+	if auth.HasResponseType("id_token") {
+		client, _ := db.DB.OidcClients().FindById(auth.ClientID)
+
+		additionalClaims := make(map[string]string)
+		if at, ok := response["access_token"]; ok {
+			additionalClaims["at_hash"] = hashForIDToken(at, client)
+		}
+		if c, ok := response["code"]; ok {
+			additionalClaims["c_hash"] = hashForIDToken(c, client)
+		}
+
+		response["id_token"] = generateIdToken(c, auth, additionalClaims)
 	}
 
 	if auth.GetResponseMode() == "fragment" {
@@ -244,4 +258,23 @@ func buildRedirection(baseURI string, additionalParams map[string]string, separa
 	}
 
 	return baseURI
+}
+
+func hashForIDToken(val string, client *db.OidcClient) string {
+	var hash []byte
+	switch client.IDTokenSignedResponseAlg {
+	case "RS256", "HS256", "ES256", "PS256":
+		h := sha256.Sum256([]byte(val))
+		hash = h[:]
+	case "RS384", "HS384", "ES384", "PS384":
+		h := sha512.Sum384([]byte(val))
+		hash = h[:]
+	case "RS512", "HS512", "ES512", "PS512":
+		h := sha512.Sum512([]byte(val))
+		hash = h[:]
+	default:
+		log.Panicf("No well defined algorithm to hash at/c_hash")
+	}
+
+	return base64.RawURLEncoding.EncodeToString(hash[:len(hash)/2])
 }

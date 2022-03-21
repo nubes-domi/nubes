@@ -37,25 +37,32 @@ func Token(c *gin.Context) {
 		TokenType:    "Bearer",
 		RefreshToken: "",
 		ExpiresIn:    3600,
-		IdToken:      generateIdToken(c, auth),
+		IdToken:      generateIdToken(c, auth, map[string]string{}),
 	})
 }
 
-func generateIdToken(c *gin.Context, auth *db.OidcAuthorizationRequest) string {
+func generateIdToken(c *gin.Context, auth *db.OidcAuthorizationRequest, additionalClaims map[string]string) string {
+	session, err := db.DB.UserSessions().FindById(auth.SessionID)
+	if err != nil {
+		log.Panicf("%v", err)
+	}
+
 	id := openid.New()
 	id.Set(jwt.IssuerKey, baseURI(c))
 	id.Set(jwt.ExpirationKey, time.Now().Add(time.Hour))
 	id.Set(jwt.IssuedAtKey, time.Now())
-
 	id.Set(jwt.SubjectKey, fmt.Sprintf("%d", auth.UserID))
 	id.Set(jwt.AudienceKey, auth.ClientID)
-	id.Set("nonce", auth.Nonce)
 
-	currentSession := utils.CtxMustGet[*db.UserSession]("currentSession")
-	id.Set("auth_time", currentSession.UpdatedAt.Unix())
+	id.Set("nonce", auth.Nonce)
+	id.Set("auth_time", session.UpdatedAt.Unix())
 
 	id.Set("acr", "0")
 	id.Set("amr", []string{"pwd"})
+
+	for k, v := range additionalClaims {
+		id.Set(k, v)
+	}
 
 	client := db.LoadClient(auth.ClientID)
 	return utils.JwtSign(id, client.IDTokenSignedResponseAlg)
