@@ -45,18 +45,18 @@ describe 'Authorization after dynamic registration', type: :feature do
     @registration_response_body = JSON.parse(@registration_response.body)
   end
 
-  it 'shows the provided custom logo' do
-    visit_authorization(client_id: @registration_response_body['client_id'])
-    expect(page.find('img')['src']).to have_content 'https://example.org/image.png'
-  end
+  # it 'shows the provided custom logo' do
+  #   visit_authorization(client_id: @registration_response_body['client_id'])
+  #   expect(page.find('img')['src']).to have_content 'https://example.org/image.png'
+  # end
 
-  it 'shows the provided privacy policy uri' do
-    visit_authorization(client_id: @registration_response_body['client_id'])
-    expect(page.find('a#policy_uri')['href']).to have_content 'https://example.org/privacy'
-  end
+  # it 'shows the provided privacy policy uri' do
+  #   visit_authorization(client_id: @registration_response_body['client_id'])
+  #   expect(page.find('a#policy_uri')['href']).to have_content 'https://example.org/privacy'
+  # end
 
-  it 'shows the provided tos uri' do
-    visit_authorization(client_id: @registration_response_body['client_id'])
-    expect(page.find('a#tos_uri')['href']).to have_content 'https://example.org/tos'
-  end
+  # it 'shows the provided tos uri' do
+  #   visit_authorization(client_id: @registration_response_body['client_id'])
+  #   expect(page.find('a#tos_uri')['href']).to have_content 'https://example.org/tos'
+  # end
 end

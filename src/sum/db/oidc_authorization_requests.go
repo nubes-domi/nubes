@@ -51,7 +51,8 @@ type OidcAuthorizationRequest struct {
 	// authorization, code
 	Stage string
 	// Stored after consent is granted
-	UserID uint
+	UserID    uint
+	SessionID string
 
 	ClientID     string `form:"client_id"`
 	Scope        string `form:"scope"`

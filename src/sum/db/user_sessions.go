@@ -48,8 +48,14 @@ func (r *UserSessionRepository) CleanupExpired() {
 }
 
 type UserSession struct {
-	ID        string `gorm:"primaryKey"`
+	ID string `gorm:"primaryKey"`
+
+	// Time at which first authentication occurred
 	CreatedAt time.Time
+
+	// Time at which the last re-authentication occurred
+	UpdatedAt time.Time
+
 	ExpiresAt time.Time
 	UserID    uint
 	UserAgent string

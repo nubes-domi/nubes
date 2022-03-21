@@ -15,8 +15,8 @@ func (n *pipeStringArray) Scan(value interface{}) error {
 	return nil
 }
 
-func (n *pipeStringArray) Value() (driver.Value, error) {
-	return driver.Value(strings.Join(*n, "|")), nil
+func (n pipeStringArray) Value() (driver.Value, error) {
+	return driver.Value(strings.Join(n, "|")), nil
 }
 
 type jwkSet struct {
@@ -24,8 +24,12 @@ type jwkSet struct {
 }
 
 func (n jwkSet) MarshalJSON() ([]byte, error) {
-	val, err := n.Value()
-	return []byte(val.(string)), err
+	if n.Set != nil {
+		val, err := n.Value()
+		return []byte(val.(string)), err
+	} else {
+		return []byte("null"), nil
+	}
 }
 
 func (n *jwkSet) UnmarshalJSON(data []byte) error {

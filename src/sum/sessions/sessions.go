@@ -9,14 +9,13 @@ import (
 	"nubes/sum/utils"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lestrrat-go/jwx/jwt"
 )
 
 func New(c *gin.Context) {
-	c.HTML(http.StatusOK, "new_session.html", gin.H{
+	c.HTML(http.StatusOK, "sessions/new", gin.H{
 		"continue": c.Query("continue"),
 	})
 }
@@ -28,7 +27,7 @@ func Create(c *gin.Context) {
 
 	user, err := db.DB.Users().FindByCredentials(username, password)
 	if err != nil {
-		c.HTML(http.StatusOK, "new_session.html", gin.H{
+		c.HTML(http.StatusOK, "sessions/new", gin.H{
 			"error": "Invalid username or password",
 		})
 	} else {
@@ -75,7 +74,7 @@ func Middleware(c *gin.Context) {
 		// (minus db corruption, handled in the function)
 		user, _ := utils.CtxMustGet[*db.Database](c, "db").Users().FindById(currentSession.UserID)
 
-		c.Set("currentSession", currentSession)
+		c.Set("currentSession", &currentSession)
 		c.Set("currentUser", user)
 	}
 
@@ -122,10 +121,10 @@ func Start(c *gin.Context, user *db.User) {
 
 	// Rewrite the cookie
 	updateSessionsCookie(c)
-	c.SetCookie("current_session", session.ID, int(time.Hour*24*365*10), "", "", false, true)
+	c.SetCookie("current_session", session.ID, 60*60*24*365*10, "", "", false, true)
 
 	// Remember the sign in
-	c.Set("currentSession", signed)
+	c.Set("currentSession", &session)
 	c.Set("currentUser", user)
 }
 
@@ -176,21 +175,6 @@ func retrieveSessions(c *gin.Context) (result map[string]db.UserSession, badSess
 	return
 }
 
-func isValidSession(c *gin.Context, session string) bool {
-	token, err := utils.JwtVerify(session)
-	if err != nil {
-		return false
-	}
-
-	sessionID := token.JwtID()
-	_, err = db.DB.UserSessions().FindById(sessionID)
-	if err != nil {
-		return false
-	}
-
-	return true
-}
-
 func updateSessionsCookie(c *gin.Context) {
 	sessions := utils.CtxMustGet[map[string]db.UserSession](c, "activeSessions")
 
@@ -199,5 +183,5 @@ func updateSessionsCookie(c *gin.Context) {
 		return s.SignedToken
 	})
 
-	c.SetCookie("sessions", strings.Join(tokens, "|"), int(time.Hour*24*365*10), "", "", false, true)
+	c.SetCookie("sessions", strings.Join(tokens, "|"), 60*60*24*365*10, "", "", false, true)
 }

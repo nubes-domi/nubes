@@ -95,7 +95,7 @@ type OidcClient struct {
 	// For the client to make changes
 	RegistrationAccessToken       string `json:"registration_access_token,omitempty" gorm:"-"`
 	RegistrationAccessTokenDigest string `json:"-"`
-	RegistrationClientURI         string `json:"registration_client_uri,omitempty"`
+	RegistrationClientURI         string `json:"registration_client_uri,omitempty" gorm:"-"`
 }
 
 // Handles client_name, logo_uri, client_uri, policy_uri, tos_uri
@@ -110,8 +110,8 @@ type OidcClientLocalizedDetail struct {
 func BuildOpenIDClient(c *gin.Context) OidcClient {
 	client := OidcClient{
 		ID:                      uuid.New().String(),
-		ClientSecret:            utils.RandBase64(48),
-		RegistrationAccessToken: utils.RandBase64(48),
+		ClientSecret:            utils.RandBase64(64),
+		RegistrationAccessToken: utils.RandBase64(64),
 	}
 	client.RegistrationAccessTokenDigest = utils.Sha256String([]byte(client.RegistrationAccessToken))
 

@@ -63,6 +63,16 @@ func (r *UserRepository) FindByCredentials(identifier, password string) (*User, 
 	return &user, nil
 }
 
+func (r *UserRepository) List(order string) []User {
+	var users []User
+	res := r.handle.Order(order).Find(&users)
+	if res.Error != nil {
+		log.Panicf("%v", res.Error)
+	}
+
+	return users
+}
+
 func (r *UserRepository) Create(user *User) error {
 	return r.handle.Create(&user).Error
 }
