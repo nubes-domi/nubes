@@ -46,8 +46,10 @@ func InitDatabase() {
 		// Create user for local development
 		if DB.Users().Count() == 0 {
 			DB.Users().Create(&User{
+				Model:          Model{ID: GenID("usr")},
 				Username:       "test",
 				PasswordDigest: utils.HashPassword("test"),
+				IsAdmin:        true,
 			})
 		}
 	}

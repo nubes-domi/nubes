@@ -19,9 +19,18 @@ func (db *Database) Users() *UserRepository {
 
 type User struct {
 	Model
-	Username       string
-	PasswordDigest string
-	IsAdmin        bool
+	Username       string `json:"username"`
+	PasswordDigest string `json:"-"`
+	IsAdmin        bool   `json:"is_admin" binding:"-"`
+
+	Name                string   `json:"name,omitempty"`
+	Picture             string   `json:"picture,omitempty"`
+	Email               string   `json:"email,omitempty"`
+	EmailVerified       bool     `json:"email_verified" binding:"-"`
+	Birthdate           JSONDate `json:"birthdate,omitempty"`
+	Zoneinfo            string   `json:"zoneinfo,omitempty"`
+	PhoneNumber         string   `json:"phone_number,omitempty"`
+	PhoneNumberVerified bool     `json:"phone_number_verified" binding:"-"`
 }
 
 func (r *UserRepository) New() *User {

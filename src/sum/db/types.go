@@ -12,9 +12,9 @@ import (
 )
 
 type Model struct {
-	ID        string `gorm:"primaryKey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `gorm:"primaryKey" json:"id" binding:"-"`
+	CreatedAt time.Time `json:"created_at" binding:"-"`
+	UpdatedAt time.Time `json:"updated_at" binding:"-"`
 }
 
 type pipeStringArray []string
@@ -91,4 +91,34 @@ func GenID(t string) string {
 	fmt.Printf("ID: %s", t+"_"+string(id))
 
 	return t + "_" + string(id)
+}
+
+type JSONDate struct {
+	time.Time
+}
+
+func (d JSONDate) MarshalJSON() ([]byte, error) {
+	return []byte(`"` + d.Time.Format("2006-01-02") + `"`), nil
+}
+
+func (d *JSONDate) UnmarshalJSON(data []byte) error {
+	t, err := time.Parse("\"2007-01-02\"", string(data))
+	d.Time = t
+	return err
+}
+
+func (d *JSONDate) Scan(value interface{}) error {
+	date, ok := value.(time.Time)
+	if ok {
+		d.Time = date
+		return nil
+	}
+
+	t, err := time.Parse("2007-01-02", value.(string))
+	d.Time = t
+	return err
+}
+
+func (d JSONDate) Value() (driver.Value, error) {
+	return d.Time.Format("2007-01-02"), nil
 }
