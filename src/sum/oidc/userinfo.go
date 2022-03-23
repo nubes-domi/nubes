@@ -1,7 +1,6 @@
 package oidc
 
 import (
-	"fmt"
 	"net/http"
 	"nubes/sum/db"
 	"nubes/sum/utils"
@@ -26,7 +25,7 @@ func Userinfo(c *gin.Context) {
 	response := map[string]interface{}{
 		"iss": baseURI(c),
 		"aud": client.ID,
-		"sub": fmt.Sprintf("%d", user.ID),
+		"sub": user.ID,
 	}
 
 	if client.UserinfoSignedResponseAlg == "none" && client.UserinfoEncryptedResponseAlg == "none" {

@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"log"
 	"nubes/sum/utils"
 	"strings"
 	"time"
@@ -18,6 +17,12 @@ func (db *Database) OidcAccessTokens() *OidcAccessTokensRepository {
 	return &OidcAccessTokensRepository{db.handle}
 }
 
+func (r *OidcAccessTokensRepository) New() *OidcAccessToken {
+	return &OidcAccessToken{
+		Model: Model{ID: GenID("oid_at")},
+	}
+}
+
 func (r *OidcAccessTokensRepository) Find(accessToken string) (*OidcAccessToken, error) {
 	obj := OidcAccessToken{}
 
@@ -30,7 +35,7 @@ func (r *OidcAccessTokensRepository) Find(accessToken string) (*OidcAccessToken,
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &OidcAccessToken{}, res.Error
 	} else if res.Error != nil {
-		log.Panicf("Could not load client: %v", res.Error)
+		panic(res.Error)
 	}
 
 	if obj.SecretDigest != utils.Sha256String([]byte(parts[1])) {
@@ -53,12 +58,10 @@ func (r *OidcAccessTokensRepository) Delete(client *OidcAccessToken) error {
 }
 
 type OidcAccessToken struct {
-	ID           string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	Model
 	ExpiresAt    time.Time
 	SecretDigest string
 	ClientID     string
-	UserID       uint
+	UserID       string
 	Scope        pipeStringArray
 }

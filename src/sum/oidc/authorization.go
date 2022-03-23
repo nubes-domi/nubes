@@ -14,14 +14,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwt"
 )
 
 func CreateAuthorizationRequest(c *gin.Context) {
 	request := buildAuthorizationRequest(c)
 	request.Stage = "authorization"
-	db.DB.OidcAuthorizationRequests().Create(&request)
+	db.DB.OidcAuthorizationRequests().Create(request)
 
 	client, err := db.DB.OidcClients().FindById(request.ClientID)
 	if err != nil {
@@ -114,19 +113,17 @@ func ConfirmAuthorizationRequest(c *gin.Context) {
 	}
 }
 
-func generateAccessToken(clientID string, userID uint, scope string) string {
+func generateAccessToken(clientID string, userID string, scope string) string {
 	secret := utils.RandBase64(32)
 
-	token := db.OidcAccessToken{
-		ID:           utils.RandBase64(16),
-		ExpiresAt:    time.Now().Add(time.Hour),
-		ClientID:     clientID,
-		SecretDigest: utils.Sha256String([]byte(secret)),
-		UserID:       userID,
-		Scope:        strings.Split(scope, " "),
-	}
+	token := db.DB.OidcAccessTokens().New()
+	token.ExpiresAt = time.Now().Add(time.Hour)
+	token.ClientID = clientID
+	token.SecretDigest = utils.Sha256String([]byte(secret))
+	token.UserID = userID
+	token.Scope = strings.Split(scope, " ")
 
-	err := db.DB.OidcAccessTokens().Create(&token)
+	err := db.DB.OidcAccessTokens().Create(token)
 	if err != nil {
 		log.Panicf("%v", err)
 	}
@@ -134,11 +131,9 @@ func generateAccessToken(clientID string, userID uint, scope string) string {
 	return token.ID + ":" + secret
 }
 
-func buildAuthorizationRequest(c *gin.Context) db.OidcAuthorizationRequest {
-	authRequest := db.OidcAuthorizationRequest{
-		ID: uuid.New().String(),
-	}
-	c.Bind(&authRequest)
+func buildAuthorizationRequest(c *gin.Context) *db.OidcAuthorizationRequest {
+	authRequest := db.DB.OidcAuthorizationRequests().New()
+	c.Bind(authRequest)
 
 	var requestObject []byte
 	if authRequest.RequestURI != "" {

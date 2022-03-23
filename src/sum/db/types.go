@@ -1,12 +1,21 @@
 package db
 
 import (
+	"crypto/rand"
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/lestrrat-go/jwx/jwk"
 )
+
+type Model struct {
+	ID        string `gorm:"primaryKey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
 
 type pipeStringArray []string
 
@@ -64,4 +73,22 @@ func (n jwkSet) Value() (driver.Value, error) {
 
 	stream, err := json.Marshal(n.Set)
 	return string(stream), err
+}
+
+func GenID(t string) string {
+	alphabet := "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	id := make([]byte, 16)
+
+	randBuf := make([]byte, 16)
+	rand.Read(randBuf)
+
+	i := 0
+	for i < 16 {
+		id[i] = alphabet[int(randBuf[i])%len(alphabet)]
+		i += 1
+	}
+
+	fmt.Printf("ID: %s", t+"_"+string(id))
+
+	return t + "_" + string(id)
 }

@@ -1,13 +1,11 @@
 package sessions
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 	"nubes/sum/db"
 	"nubes/sum/utils"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +33,7 @@ func Create(c *gin.Context) {
 		if next != "" {
 			c.Redirect(302, next)
 		} else {
-			c.Redirect(302, fmt.Sprintf("/users/%d", user.ID))
+			c.Redirect(302, "/users/"+user.ID)
 		}
 	}
 }
@@ -100,7 +98,7 @@ func Start(c *gin.Context, user *db.User) {
 	// Prepare a token to be given as cookie
 	token, err := jwt.NewBuilder().
 		JwtID(session.ID).
-		Subject(fmt.Sprintf("%d", user.ID)).
+		Subject(user.ID).
 		Expiration(session.ExpiresAt).
 		Audience([]string{"sessions"}).
 		Build()
@@ -161,10 +159,10 @@ func retrieveSessions(c *gin.Context) (result map[string]db.UserSession, badSess
 	for _, sessionToken := range sessionTokens {
 		token, err := utils.JwtVerify(sessionToken)
 		if err == nil {
-			sub, _ := strconv.Atoi(token.Subject())
+			sub := token.Subject()
 			result[token.JwtID()] = db.UserSession{
-				ID:          token.JwtID(),
-				UserID:      uint(sub),
+				Model:       db.Model{ID: token.JwtID()},
+				UserID:      sub,
 				SignedToken: sessionToken,
 			}
 		} else {

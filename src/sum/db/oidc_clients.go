@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -32,7 +31,7 @@ func (r *OidcClientRepository) FindById(id string) (*OidcClient, error) {
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &OidcClient{}, res.Error
 	} else if res.Error != nil {
-		log.Panicf("Could not load client: %v", res.Error)
+		panic(res.Error)
 	}
 
 	client.ClientIDIssuedAt = client.CreatedAt.Unix()
@@ -100,7 +99,7 @@ type OidcClient struct {
 
 // Handles client_name, logo_uri, client_uri, policy_uri, tos_uri
 type OidcClientLocalizedDetail struct {
-	gorm.Model
+	Model
 	OidcClientID string
 	Locale       string
 	Field        string
@@ -109,7 +108,7 @@ type OidcClientLocalizedDetail struct {
 
 func BuildOpenIDClient(c *gin.Context) OidcClient {
 	client := OidcClient{
-		ID:                      uuid.New().String(),
+		ID:                      GenID("oid_c"),
 		ClientSecret:            utils.RandBase64(64),
 		RegistrationAccessToken: utils.RandBase64(64),
 	}

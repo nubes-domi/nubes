@@ -2,12 +2,10 @@ package db
 
 import (
 	"errors"
-	"log"
 	"nubes/sum/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,10 +18,16 @@ func (db *Database) Users() *UserRepository {
 }
 
 type User struct {
-	gorm.Model
+	Model
 	Username       string
 	PasswordDigest string
 	IsAdmin        bool
+}
+
+func (r *UserRepository) New() *User {
+	return &User{
+		Model: Model{ID: GenID("usr")},
+	}
 }
 
 func (r *UserRepository) Count() int64 {
@@ -33,14 +37,14 @@ func (r *UserRepository) Count() int64 {
 	return count
 }
 
-func (r *UserRepository) FindById(id uint) (*User, error) {
+func (r *UserRepository) FindById(id string) (*User, error) {
 	user := User{}
 
-	res := r.handle.First(&user, id)
+	res := r.handle.First(&user, "id = ?", id)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &User{}, res.Error
 	} else if res.Error != nil {
-		log.Panicf("Could not load user: %v", res.Error)
+		panic(res.Error)
 	}
 
 	return &user, nil
@@ -53,7 +57,7 @@ func (r *UserRepository) FindByCredentials(identifier, password string) (*User, 
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &User{}, res.Error
 	} else if res.Error != nil {
-		log.Panicf("Could not load user: %v", res.Error)
+		panic(res.Error)
 	}
 
 	if !user.VerifyPassword(password) {
@@ -67,7 +71,7 @@ func (r *UserRepository) List(order string) []User {
 	var users []User
 	res := r.handle.Order(order).Find(&users)
 	if res.Error != nil {
-		log.Panicf("%v", res.Error)
+		panic(res.Error)
 	}
 
 	return users
@@ -95,7 +99,7 @@ func (u *User) VerifyPassword(password string) bool {
 
 func (u *User) NewSession(c *gin.Context) UserSession {
 	return UserSession{
-		ID:        uuid.New().String(),
+		Model:     Model{ID: GenID("usr_sess")},
 		UserID:    u.ID,
 		UserAgent: c.Request.UserAgent(),
 		IPAddress: c.ClientIP(),
@@ -104,14 +108,14 @@ func (u *User) NewSession(c *gin.Context) UserSession {
 }
 
 type UserOidcScopes struct {
-	gorm.Model
+	Model
 	UserID       uint
 	OidcClientID string
 	Scope        string
 }
 
 type UserOidcSession struct {
-	gorm.Model
+	Model
 	UserID       uint
 	OidcClientID string
 	CodeDigest   string

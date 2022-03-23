@@ -1,7 +1,6 @@
 package oidc
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"nubes/sum/db"
@@ -51,7 +50,7 @@ func generateIdToken(c *gin.Context, auth *db.OidcAuthorizationRequest, addition
 	id.Set(jwt.IssuerKey, baseURI(c))
 	id.Set(jwt.ExpirationKey, time.Now().Add(time.Hour))
 	id.Set(jwt.IssuedAtKey, time.Now())
-	id.Set(jwt.SubjectKey, fmt.Sprintf("%d", auth.UserID))
+	id.Set(jwt.SubjectKey, auth.UserID)
 	id.Set(jwt.AudienceKey, auth.ClientID)
 
 	id.Set("nonce", auth.Nonce)

@@ -2,10 +2,8 @@ package db
 
 import (
 	"errors"
-	"log"
 	"nubes/sum/utils"
 	"strings"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -18,6 +16,12 @@ func (db *Database) OidcAuthorizationRequests() *OidcAuthorizationRequestReposit
 	return &OidcAuthorizationRequestRepository{db.handle}
 }
 
+func (r *OidcAuthorizationRequestRepository) New() *OidcAuthorizationRequest {
+	return &OidcAuthorizationRequest{
+		Model: Model{ID: GenID("oid_ar")},
+	}
+}
+
 func (r *OidcAuthorizationRequestRepository) FindByIdAndStage(id string, stage string) (*OidcAuthorizationRequest, error) {
 	client := OidcAuthorizationRequest{}
 
@@ -25,7 +29,7 @@ func (r *OidcAuthorizationRequestRepository) FindByIdAndStage(id string, stage s
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &OidcAuthorizationRequest{}, res.Error
 	} else if res.Error != nil {
-		log.Panicf("Could not load client: %v", res.Error)
+		panic(res.Error)
 	}
 
 	return &client, nil
@@ -44,14 +48,12 @@ func (r *OidcAuthorizationRequestRepository) Delete(client *OidcAuthorizationReq
 }
 
 type OidcAuthorizationRequest struct {
-	ID        string `gorm:"primaryKey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Model
 
 	// authorization, code
 	Stage string
 	// Stored after consent is granted
-	UserID    uint
+	UserID    string
 	SessionID string
 
 	ClientID     string `form:"client_id"`
