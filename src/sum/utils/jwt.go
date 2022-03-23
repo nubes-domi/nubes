@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"crypto/ecdsa"
 	"crypto/ed25519"
@@ -9,7 +10,10 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"log"
+	"os"
+	"path"
 
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwk"
@@ -79,21 +83,71 @@ func JwtVerify(serialized string) (jwt.Token, error) {
 	return jwt.Parse([]byte(serialized), jwt.WithKeySet(JWKPublicSet), jwt.InferAlgorithmFromKey(true))
 }
 
+func jwksPath() string {
+	store := os.Getenv("NUBES_STORE")
+	if os.Getenv("NUBES_DEV") != "" || store == "" {
+		store = "keys.jwk"
+	} else {
+		store = path.Join(store, "sum", "keys.jwk")
+	}
+
+	return store
+}
+
 func PrepareKeys() {
-	JWKSet = jwk.NewSet()
-	JWKPublicSet = jwk.NewSet()
+	jwksPath := jwksPath()
 
-	rsaPriv, rsaPub := RSAKeypair("sig")
-	ecPriv, ecPub := ECKeypair("sig")
-	okpPriv, okpPub := OKPKeypair("sig")
+	if _, err := os.Stat(jwksPath); errors.Is(err, os.ErrNotExist) {
+		JWKSet = jwk.NewSet()
+		JWKPublicSet = jwk.NewSet()
 
-	JWKSet.Add(rsaPriv)
-	JWKSet.Add(ecPriv)
-	JWKSet.Add(okpPriv)
+		rsaPriv, rsaPub := RSAKeypair("sig")
+		ecPriv, ecPub := ECKeypair("sig")
+		okpPriv, okpPub := OKPKeypair("sig")
 
-	JWKPublicSet.Add(rsaPub)
-	JWKPublicSet.Add(ecPub)
-	JWKPublicSet.Add(okpPub)
+		JWKSet.Add(rsaPriv)
+		JWKSet.Add(ecPriv)
+		JWKSet.Add(okpPriv)
+
+		JWKPublicSet.Add(rsaPub)
+		JWKPublicSet.Add(ecPub)
+		JWKPublicSet.Add(okpPub)
+
+		serial, err := json.MarshalIndent(JWKSet, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+
+		f, err := os.Create(jwksPath)
+		if err != nil {
+			panic(err)
+		}
+		f.Write(serial)
+		f.Close()
+	} else {
+		f, err := os.Open(jwksPath)
+		if err != nil {
+			panic(err)
+		}
+		reader := bufio.NewReader(f)
+		JWKSet, err = jwk.ParseReader(reader)
+		if err != nil {
+			panic(err)
+		}
+
+		JWKPublicSet = jwk.NewSet()
+		for i := 0; i < JWKSet.Len(); i += 1 {
+			key, ok := JWKSet.Get(i)
+			if !ok {
+				panic("Could not get key from private key set")
+			}
+			pKey, err := key.PublicKey()
+			if err != nil {
+				panic(err)
+			}
+			JWKPublicSet.Add(pKey)
+		}
+	}
 }
 
 func RSAKeypair(use string) (jwk.Key, jwk.Key) {
