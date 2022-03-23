@@ -106,8 +106,8 @@ func (u *User) VerifyPassword(password string) bool {
 	return utils.VerifyPassword(password, u.PasswordDigest)
 }
 
-func (u *User) NewSession(c *gin.Context) UserSession {
-	return UserSession{
+func (u *User) NewSession(c *gin.Context) *UserSession {
+	return &UserSession{
 		Model:     Model{ID: GenID("usr_sess")},
 		UserID:    u.ID,
 		UserAgent: c.Request.UserAgent(),

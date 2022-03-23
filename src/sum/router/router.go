@@ -1,10 +1,10 @@
 package router
 
 import (
+	"nubes/sum/api"
 	"nubes/sum/db"
 	"nubes/sum/oidc"
 	"nubes/sum/sessions"
-	"nubes/sum/users"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,12 +40,20 @@ func New() *gin.Engine {
 	router.POST("/signin", sessions.Create)
 
 	usersNamespace := router.Group("/users", sessions.EnsureSignedIn)
+	usersNamespace.GET("/", api.UsersIndex)
+	usersNamespace.POST("/", api.UsersCreate)
+	usersNamespace.GET("/:id", api.UsersShow)
+	usersNamespace.PUT("/:id", api.UsersUpdate)
+	usersNamespace.DELETE("/:id", api.UsersDelete)
 
-	usersNamespace.GET("/", users.Index)
-	usersNamespace.POST("/", users.Create)
-	usersNamespace.GET("/:id", users.Show)
-	usersNamespace.POST("/:id", users.Update)
-	usersNamespace.DELETE("/:id", users.Delete)
+	sessionsNamespace := router.Group("/sessions", sessions.EnsureSignedIn)
+	sessionsNamespace.GET("/", api.SessionsIndex)
+	sessionsNamespace.DELETE("/:id", api.SessionsDelete)
+
+	appsNamespace := router.Group("/apps", sessions.EnsureSignedIn)
+	appsNamespace.GET("/", api.AppsIndex)
+	appsNamespace.PUT("/:id", api.AppsUpdate)
+	appsNamespace.DELETE("/:id", api.AppsDelete)
 
 	router.Static("/assets", "./assets")
 

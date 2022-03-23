@@ -16,6 +16,16 @@ func (db *Database) UserSessions() *UserSessionRepository {
 	return &UserSessionRepository{db.handle}
 }
 
+func (r *UserSessionRepository) ListForUserID(userID string) []UserSession {
+	var sessions []UserSession
+	res := r.handle.Order("updated_at DESC").Find(&sessions)
+	if res.Error != nil {
+		panic(res.Error)
+	}
+
+	return sessions
+}
+
 func (r *UserSessionRepository) FindById(id string) (*UserSession, error) {
 	session := UserSession{}
 
@@ -41,6 +51,19 @@ func (r *UserSessionRepository) Delete(userSession *UserSession) {
 	}
 }
 
+func (r *UserSessionRepository) DeleteFor(ID string, userID string) error {
+	result := r.handle.Delete(&UserSession{}, "id = ? AND user_id = ?", ID, userID)
+	if result.Error != nil {
+		panic(result.Error)
+	}
+
+	if result.RowsAffected != 1 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}
+
 func (r *UserSessionRepository) CleanupExpired() {
 	if err := r.handle.Where("expires_at < date('now')").Delete(&UserSession{}).Error; err != nil {
 		panic(err)
@@ -49,10 +72,10 @@ func (r *UserSessionRepository) CleanupExpired() {
 
 type UserSession struct {
 	Model
-	ExpiresAt time.Time
-	UserID    string
-	UserAgent string
-	IPAddress string
+	ExpiresAt time.Time `json:"-"`
+	UserID    string    `json:"-"`
+	UserAgent string    `json:"user_agent"`
+	IPAddress string    `json:"ip_address"`
 
-	SignedToken string `gorm:"-"`
+	SignedToken string `gorm:"-" json:"-"`
 }

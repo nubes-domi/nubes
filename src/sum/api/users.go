@@ -1,4 +1,4 @@
-package users
+package api
 
 import (
 	"net/http"
@@ -12,7 +12,7 @@ func currentUser(c *gin.Context) *db.User {
 	return utils.CtxMustGet[*db.User](c, "currentUser")
 }
 
-func Index(c *gin.Context) {
+func UsersIndex(c *gin.Context) {
 	currentUser := currentUser(c)
 	if !currentUser.IsAdmin {
 		c.JSON(http.StatusForbidden, gin.H{
@@ -26,7 +26,7 @@ func Index(c *gin.Context) {
 	})
 }
 
-func Create(c *gin.Context) {
+func UsersCreate(c *gin.Context) {
 	currentUser := currentUser(c)
 	if !currentUser.IsAdmin {
 		c.JSON(http.StatusForbidden, gin.H{
@@ -42,7 +42,7 @@ func Create(c *gin.Context) {
 	c.JSON(http.StatusOK, &user)
 }
 
-func Update(c *gin.Context) {
+func UsersUpdate(c *gin.Context) {
 	user, err := db.DB.Users().FindById(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -65,7 +65,7 @@ func Update(c *gin.Context) {
 	c.JSON(http.StatusOK, &user)
 }
 
-func Delete(c *gin.Context) {
+func UsersDelete(c *gin.Context) {
 	user, err := db.DB.Users().FindById(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -90,7 +90,7 @@ func Delete(c *gin.Context) {
 	}
 }
 
-func Show(c *gin.Context) {
+func UsersShow(c *gin.Context) {
 	user, err := db.DB.Users().FindById(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{

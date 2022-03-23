@@ -66,14 +66,17 @@ func Middleware(c *gin.Context) {
 	}
 
 	if currentSessionToken != "" {
-		currentSession := activeSessions[currentSessionToken]
+		currentSession, ok := activeSessions[currentSessionToken]
+		if ok {
+			// Token is valid, not expired and in DB. We WILL always find a user.
+			// (minus db corruption, handled in the function)
+			user, _ := utils.CtxMustGet[*db.Database](c, "db").Users().FindById(currentSession.UserID)
 
-		// Token is valid, not expired and in DB. We WILL always find a user.
-		// (minus db corruption, handled in the function)
-		user, _ := utils.CtxMustGet[*db.Database](c, "db").Users().FindById(currentSession.UserID)
-
-		c.Set("currentSession", &currentSession)
-		c.Set("currentUser", user)
+			c.Set("currentSession", &currentSession)
+			c.Set("currentUser", user)
+		} else {
+			c.SetCookie("current_session", "", -1, "", "", false, true)
+		}
 	}
 
 	c.Next()
@@ -93,7 +96,7 @@ func Start(c *gin.Context, user *db.User) {
 
 	// Genearate and save the new session
 	session := user.NewSession(c)
-	database.UserSessions().Create(&session)
+	database.UserSessions().Create(session)
 
 	// Prepare a token to be given as cookie
 	token, err := jwt.NewBuilder().
@@ -113,7 +116,7 @@ func Start(c *gin.Context, user *db.User) {
 	session.SignedToken = signed
 
 	// Put the new session in the context
-	sessions := utils.CtxMustGet[map[string]db.UserSession](c, "activeSessions")
+	sessions := utils.CtxMustGet[map[string]*db.UserSession](c, "activeSessions")
 	sessions[session.ID] = session
 	c.Set("activeSessions", sessions)
 
@@ -137,47 +140,50 @@ func CurrentUser(c *gin.Context) *db.User {
 }
 
 func IsAnyoneSignedIn(c *gin.Context) bool {
-	sessions := utils.CtxMustGet[map[string]db.UserSession](c, "activeSessions")
+	sessions := utils.CtxMustGet[map[string]*db.UserSession](c, "activeSessions")
 	return len(sessions) > 0
 }
 
 func IsUserSignedIn(c *gin.Context, user *db.User) bool {
-	sessions := utils.CtxMustGet[map[string]db.UserSession](c, "activeSessions")
-	return utils.AnyMap(sessions, func(_ string, s db.UserSession) bool {
+	sessions := utils.CtxMustGet[map[string]*db.UserSession](c, "activeSessions")
+	return utils.AnyMap(sessions, func(_ string, s *db.UserSession) bool {
 		return s.UserID == user.ID
 	})
 }
 
-func retrieveSessions(c *gin.Context) (result map[string]db.UserSession, badSessions []string) {
-	result = make(map[string]db.UserSession)
+func retrieveSessions(c *gin.Context) (result map[string]*db.UserSession, badSessions []string) {
 	sessionsCookie, err := c.Cookie("sessions")
 	if err != nil {
 		return result, []string{}
 	}
 
 	sessionTokens := strings.Split(sessionsCookie, "|")
+	result = make(map[string]*db.UserSession, len(sessionTokens))
 	for _, sessionToken := range sessionTokens {
 		token, err := utils.JwtVerify(sessionToken)
-		if err == nil {
-			sub := token.Subject()
-			result[token.JwtID()] = db.UserSession{
-				Model:       db.Model{ID: token.JwtID()},
-				UserID:      sub,
-				SignedToken: sessionToken,
-			}
-		} else {
+		if err != nil {
 			badSessions = append(badSessions, sessionToken)
+			continue
 		}
+
+		session, err := db.DB.UserSessions().FindById(token.JwtID())
+		if err != nil {
+			badSessions = append(badSessions, sessionToken)
+			continue
+		}
+
+		session.SignedToken = sessionToken
+		result[session.ID] = session
 	}
 
 	return
 }
 
 func updateSessionsCookie(c *gin.Context) {
-	sessions := utils.CtxMustGet[map[string]db.UserSession](c, "activeSessions")
+	sessions := utils.CtxMustGet[map[string]*db.UserSession](c, "activeSessions")
 
 	// SignedToken is filled by retrieveSessions
-	tokens := utils.CollectMap(sessions, func(s db.UserSession) string {
+	tokens := utils.CollectMap(sessions, func(s *db.UserSession) string {
 		return s.SignedToken
 	})
 
