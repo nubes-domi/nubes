@@ -101,7 +101,8 @@ func ConfirmAuthorizationRequest(c *gin.Context) {
 			additionalClaims["c_hash"] = hashForIDToken(c, client)
 		}
 
-		response["id_token"] = generateIdToken(c, auth, additionalClaims)
+		userClient, _ := db.DB.UserOidcClients().FindByUserAndClientID(auth.UserID, auth.ClientID)
+		response["id_token"] = generateIdToken(c, auth, userClient.GetClaims())
 	}
 
 	if auth.GetResponseMode() == "fragment" {

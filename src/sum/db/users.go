@@ -23,14 +23,15 @@ type User struct {
 	PasswordDigest string `json:"-"`
 	IsAdmin        bool   `json:"is_admin" binding:"-"`
 
-	Name                string   `json:"name,omitempty"`
-	Picture             string   `json:"picture,omitempty"`
-	Email               string   `json:"email,omitempty"`
-	EmailVerified       bool     `json:"email_verified" binding:"-"`
-	Birthdate           JSONDate `json:"birthdate,omitempty"`
-	Zoneinfo            string   `json:"zoneinfo,omitempty"`
-	PhoneNumber         string   `json:"phone_number,omitempty"`
-	PhoneNumberVerified bool     `json:"phone_number_verified" binding:"-"`
+	Name                string    `json:"name,omitempty"`
+	Picture             string    `json:"picture,omitempty"`
+	Email               string    `json:"email,omitempty"`
+	EmailVerified       bool      `json:"email_verified" binding:"-"`
+	Birthdate           *JSONDate `json:"birthdate,omitempty"`
+	Locale              string    `json:"locale,omitempty"`
+	Zoneinfo            string    `json:"zoneinfo,omitempty"`
+	PhoneNumber         string    `json:"phone_number,omitempty"`
+	PhoneNumberVerified bool      `json:"phone_number_verified" binding:"-"`
 }
 
 func (r *UserRepository) New() *User {
@@ -116,16 +117,11 @@ func (u *User) NewSession(c *gin.Context) *UserSession {
 	}
 }
 
-type UserOidcScopes struct {
-	Model
-	UserID       uint
-	OidcClientID string
-	Scope        string
-}
+func (u *User) GrantedScopesForClient(clientID string) []string {
+	userOidcClient, err := DB.UserOidcClients().FindByUserAndClientID(u.ID, clientID)
+	if err != nil {
+		return []string{}
+	}
 
-type UserOidcSession struct {
-	Model
-	UserID       uint
-	OidcClientID string
-	CodeDigest   string
+	return userOidcClient.Scopes
 }

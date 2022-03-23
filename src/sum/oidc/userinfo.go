@@ -20,18 +20,18 @@ func Userinfo(c *gin.Context) {
 	}
 
 	client, _ := db.DB.OidcClients().FindById(accessToken.ClientID)
-	user, _ := db.DB.Users().FindById(accessToken.UserID)
+	userClient, _ := db.DB.UserOidcClients().FindByUserAndClientID(accessToken.UserID, client.ID)
 
-	response := map[string]interface{}{
-		"iss": baseURI(c),
-		"aud": client.ID,
-		"sub": user.ID,
-	}
+	response := userClient.GetClaims()
+	response["sub"] = accessToken.UserID
 
 	if client.UserinfoSignedResponseAlg == "none" && client.UserinfoEncryptedResponseAlg == "none" {
 		c.IndentedJSON(http.StatusOK, response)
 	} else {
 		c.Header("Content-Type", "application/jwt")
+
+		response["iss"] = baseURI(c)
+		response["aud"] = client.ID
 
 		token := jwt.New()
 		for k, v := range response {

@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"gorm.io/gorm"
@@ -33,7 +32,7 @@ func (r *UserSessionRepository) FindById(id string) (*UserSession, error) {
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &UserSession{}, res.Error
 	} else if res.Error != nil {
-		log.Panicf("Could not load user session: %v", res.Error)
+		panic(res.Error)
 	}
 
 	return &session, nil

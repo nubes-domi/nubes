@@ -31,16 +31,18 @@ func Token(c *gin.Context) {
 		log.Panicf("Invalid authorization code: %v", err)
 	}
 
+	userClient, _ := db.DB.UserOidcClients().FindByUserAndClientID(auth.UserID, auth.ClientID)
+
 	c.IndentedJSON(http.StatusCreated, TokenResponse{
 		AccessToken:  generateAccessToken(auth.ClientID, auth.UserID, auth.Scope),
 		TokenType:    "Bearer",
 		RefreshToken: "",
 		ExpiresIn:    3600,
-		IdToken:      generateIdToken(c, auth, map[string]string{}),
+		IdToken:      generateIdToken(c, auth, userClient.GetClaims()),
 	})
 }
 
-func generateIdToken(c *gin.Context, auth *db.OidcAuthorizationRequest, additionalClaims map[string]string) string {
+func generateIdToken(c *gin.Context, auth *db.OidcAuthorizationRequest, additionalClaims map[string]interface{}) string {
 	session, err := db.DB.UserSessions().FindById(auth.SessionID)
 	if err != nil {
 		log.Panicf("%v", err)
