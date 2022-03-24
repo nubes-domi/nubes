@@ -40,18 +40,19 @@ func New() *gin.Engine {
 	router.POST("/signin", sessions.Create)
 
 	usersNamespace := router.Group("/users", sessions.EnsureSignedIn)
-	usersNamespace.GET("/", api.UsersIndex)
-	usersNamespace.POST("/", api.UsersCreate)
+	usersNamespace.GET("", api.UsersIndex)
+	usersNamespace.POST("", api.UsersCreate)
 	usersNamespace.GET("/:id", api.UsersShow)
 	usersNamespace.PUT("/:id", api.UsersUpdate)
 	usersNamespace.DELETE("/:id", api.UsersDelete)
 
-	sessionsNamespace := router.Group("/sessions", sessions.EnsureSignedIn)
-	sessionsNamespace.GET("/", api.SessionsIndex)
-	sessionsNamespace.DELETE("/:id", api.SessionsDelete)
+	sessionsNamespace := router.Group("/sessions")
+	sessionsNamespace.GET("", sessions.EnsureSignedIn, api.SessionsIndex)
+	sessionsNamespace.POST("", api.SessionsCreate)
+	sessionsNamespace.DELETE("/:id", sessions.EnsureSignedIn, api.SessionsDelete)
 
 	appsNamespace := router.Group("/apps", sessions.EnsureSignedIn)
-	appsNamespace.GET("/", api.AppsIndex)
+	appsNamespace.GET("", api.AppsIndex)
 	appsNamespace.PUT("/:id", api.AppsUpdate)
 	appsNamespace.DELETE("/:id", api.AppsDelete)
 
