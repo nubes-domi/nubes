@@ -14,7 +14,7 @@ func currentUser(c *gin.Context) *db.User {
 
 func UsersIndex(c *gin.Context) {
 	currentUser := currentUser(c)
-	if !currentUser.IsAdmin {
+	if !currentUser.Admin {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "access_denied",
 		})
@@ -28,7 +28,7 @@ func UsersIndex(c *gin.Context) {
 
 func UsersCreate(c *gin.Context) {
 	currentUser := currentUser(c)
-	if !currentUser.IsAdmin {
+	if !currentUser.Admin {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "access_denied",
 		})
@@ -52,7 +52,7 @@ func UsersUpdate(c *gin.Context) {
 	}
 
 	currentUser := currentUser(c)
-	if user.ID != currentUser.ID && !currentUser.IsAdmin {
+	if user.ID != currentUser.ID && !currentUser.Admin {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "access_denied",
 		})
@@ -75,7 +75,7 @@ func UsersDelete(c *gin.Context) {
 	}
 
 	currentUser := currentUser(c)
-	if !currentUser.IsAdmin {
+	if !currentUser.Admin {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "access_denied",
 		})
@@ -100,7 +100,7 @@ func UsersShow(c *gin.Context) {
 	}
 
 	currentUser := currentUser(c)
-	if user.ID != currentUser.ID && !currentUser.IsAdmin {
+	if user.ID != currentUser.ID && !currentUser.Admin {
 		c.JSON(http.StatusForbidden, gin.H{
 			"error": "access_denied",
 		})

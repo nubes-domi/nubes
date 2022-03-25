@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"nubes/sum/utils"
+	"regexp"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,8 +21,9 @@ func (db *Database) Users() *UserRepository {
 type User struct {
 	Model
 	Username       string `json:"username"`
+	Password       string `json:"password,omitempty" gorm:"-"`
 	PasswordDigest string `json:"-"`
-	IsAdmin        bool   `json:"is_admin" binding:"-"`
+	Admin          bool   `json:"admin" binding:"-"`
 
 	Name                string    `json:"name,omitempty"`
 	Picture             string    `json:"picture,omitempty"`
@@ -77,9 +79,9 @@ func (r *UserRepository) FindByCredentials(identifier, password string) (*User, 
 	return &user, nil
 }
 
-func (r *UserRepository) List(order string) []User {
-	var users []User
-	res := r.handle.Order(order).Find(&users)
+func (r *UserRepository) List(orderBy string) []*User {
+	var users []*User
+	res := r.handle.Order(orderBy).Find(&users)
 	if res.Error != nil {
 		panic(res.Error)
 	}
@@ -95,8 +97,8 @@ func (r *UserRepository) Update(user *User) error {
 	return r.handle.Save(&user).Error
 }
 
-func (r *UserRepository) Delete(user *User) error {
-	return r.handle.Delete(&user).Error
+func (r *UserRepository) Delete(userID string) error {
+	return r.handle.Delete("id = ?", userID).Error
 }
 
 func (u *User) SetPassword(password string) {
@@ -124,4 +126,31 @@ func (u *User) GrantedScopesForClient(clientID string) []string {
 	}
 
 	return userOidcClient.Scopes
+}
+
+func (u *User) Validate() error {
+	if u.Password != "" {
+		if len(u.Password) < 8 {
+			return &ValidationError{Field: "password", Detail: "too_short"}
+		}
+		u.PasswordDigest = utils.HashPassword(u.Password)
+	}
+
+	if u.Email != "" {
+		if m, _ := regexp.MatchString(`\A.+@.+\z`, u.Email); !m {
+			return &ValidationError{Field: "email"}
+		}
+	}
+
+	if u.PhoneNumber != "" {
+		if m, _ := regexp.MatchString(`\A+?[\d ]{5,20}\z`, u.PhoneNumber); !m {
+			return &ValidationError{Field: "phone_number"}
+		}
+	}
+
+	if u.Birthdate != nil && u.Birthdate.After(time.Now()) {
+		return &ValidationError{Field: "birthdate"}
+	}
+
+	return nil
 }

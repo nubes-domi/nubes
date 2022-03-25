@@ -1,18 +1,15 @@
 package api
 
 import (
-	"log"
 	"net/http"
-	"nubes/sum/db"
-	"nubes/sum/utils"
+	"nubes/sum/services/sessions"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lestrrat-go/jwx/jwt"
 )
 
 func SessionsIndex(c *gin.Context) {
 	currentUser := currentUser(c)
-	sessions := db.DB.UserSessions().ListForUserID(currentUser.ID)
+	sessions, _ := sessions.List(currentUser, "")
 
 	c.JSON(http.StatusOK, gin.H{
 		"sessions": sessions,
@@ -35,45 +32,23 @@ func SessionsCreate(c *gin.Context) {
 		return
 	}
 
-	user, err := db.DB.Users().FindByCredentials(request.Username, request.Password)
+	session, err := sessions.Create(request.Username, request.Password, "", "")
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error": "invalid_credentials",
+			"error": err,
 		})
 	} else {
-		// Genearate and save the new session
-		session := user.NewSession(c)
-		db.DB.UserSessions().Create(session)
-
-		// Prepare an access token
-		token, err := jwt.NewBuilder().
-			JwtID(session.ID).
-			Subject(user.ID).
-			Expiration(session.ExpiresAt).
-			Audience([]string{"sessions"}).
-			Build()
-		if err != nil {
-			log.Panicf("Could not build the JWT token: %v", err)
-		}
-
 		c.JSON(http.StatusOK, gin.H{
-			"access_token": utils.JwtSign(token, "RS256"),
+			"access_token": session.SignedToken,
 		})
 	}
 }
 
 func SessionsDelete(c *gin.Context) {
 	currentUser := currentUser(c)
-	if err := db.DB.UserSessions().DeleteFor(c.Param("id"), currentUser.ID); err != nil {
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": "not_found",
-			})
-			return
-		}
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"ok": true,
-		})
-	}
+	sessions.Delete(currentUser, c.Param("id"))
+
+	c.JSON(http.StatusOK, gin.H{
+		"ok": true,
+	})
 }

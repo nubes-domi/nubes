@@ -49,7 +49,7 @@ func InitDatabase() {
 				Model:          Model{ID: GenID("usr")},
 				Username:       "test",
 				PasswordDigest: utils.HashPassword("test"),
-				IsAdmin:        true,
+				Admin:          true,
 			})
 		}
 	}

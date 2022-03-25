@@ -15,9 +15,13 @@ func (db *Database) UserSessions() *UserSessionRepository {
 	return &UserSessionRepository{db.handle}
 }
 
-func (r *UserSessionRepository) ListForUserID(userID string) []UserSession {
-	var sessions []UserSession
-	res := r.handle.Order("updated_at DESC").Find(&sessions)
+func (r *UserSessionRepository) ListForUserID(userID, orderBy string) []*UserSession {
+	if orderBy == "" {
+		orderBy = "updated_at desc"
+	}
+
+	var sessions []*UserSession
+	res := r.handle.Order(orderBy).Find(&sessions)
 	if res.Error != nil {
 		panic(res.Error)
 	}

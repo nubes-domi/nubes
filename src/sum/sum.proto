@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./rpc";
+
+service Sessions {
+    rpc Create(CreateSessionRequest) returns (Session);
+    rpc Delete(DeleteSessionRequest) returns (google.protobuf.Empty);
+    rpc List(ListSessionsRequest) returns (ListSessionsResponse);
+}
+
+service Users {
+    rpc Create(CreateUserRequest) returns (User);
+    rpc Delete(DeleteUserRequest) returns (google.protobuf.Empty);
+    rpc Get(GetUserRequest) returns (User);
+    rpc List(ListUsersRequest) returns (ListUsersResponse);
+    rpc Update(UpdateUserRequest) returns (User);
+}
+
+message Session {
+    string authentication_token = 1;
+    google.protobuf.Timestamp updated_at = 2;
+    string user_agent = 3;
+    string ip_address = 4;
+}
+
+message CreateSessionRequest {
+    Session session = 1;
+
+    string username = 2;
+    string password = 3;
+}
+
+message DeleteSessionRequest {
+    string session_id = 1;
+}
+
+message ListSessionsRequest {
+    string page_token = 1;
+    int32 page_size = 2;
+    string order_by = 3;
+}
+
+message ListSessionsResponse {
+    repeated Session sessions = 1;
+
+    string next_page_token = 2;
+}
+
+message CreateUserRequest {
+    User user = 1;
+}
+
+message DeleteUserRequest {
+    string user_id = 1;
+}
+
+message GetUserRequest {
+    string user_id = 1;   
+}
+
+message ListUsersRequest {
+    string page_token = 1;
+    int32 page_size = 2;
+    string order_by = 3;
+}
+
+message UpdateUserRequest {
+    User user = 1;
+}
+
+message ListUsersResponse {
+    repeated User users = 1;
+
+    string next_page_token = 2;
+}
+
+message User {
+    string id = 1;
+    bool admin = 2;
+    google.protobuf.Timestamp updated_at = 3;
+    string username = 4;
+    string password = 5;
+    string name = 6;
+    string email = 7;
+    bool email_verified = 8;
+    string phone_number = 9;
+    bool phone_number_verified = 10;
+    string picture = 11;
+    string birthdate = 12;
+    string locale = 13;
+    string zoneinfo = 14;
+}
