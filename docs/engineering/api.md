@@ -8,12 +8,18 @@ It's not excluded that some services might decide to expose both protocols, and 
 
 ## REST
 
-### The good and the bad
-
 - ✔️ Very common, well known
 - ✔️ Good tooling
 - 🔴 Hard or impossible to get exactly what's needed (and only that) in a single request.
 - 🔴 No real standardisation of request/response formats except for jsonapi.org, which might just be too strongly opinionated.
+
+## gRPC with protocol buffers
+
+- ✔️ Client and server stubs are generated automatically
+- ✔️ Fast and compact (although, not necessarily required in a local network)
+- ✔️ Decent tooling
+- 🔴 Less well known
+- 🔴 Not usable in a browser out of the box (but can be made so)
 
 ## GraphQL 
 
