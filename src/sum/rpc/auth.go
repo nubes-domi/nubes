@@ -12,7 +12,7 @@ import (
 )
 
 func getAuthorizationWhitelistedEndpoints() []string {
-	return []string{"/Sessions/Create"}
+	return []string{"/sum.Sessions/Create"}
 }
 
 func ServerInterceptor(
@@ -21,7 +21,6 @@ func ServerInterceptor(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
-
 	newCtx, err := authorize(ctx, info)
 	if err != nil {
 		return nil, err

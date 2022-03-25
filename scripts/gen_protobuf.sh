@@ -1,11 +1,9 @@
 #!/bin/bash
 
 # Rebuild the JS Client for sum gRPC
-protoc \
-    --plugin=./src/experior/node_modules/.bin/protoc-gen-ts_proto \
-    --ts_proto_out=./src/experior/grpc \
-    --ts_proto_opt=esModuleInterop=true \
-    --ts_proto_opt=outputClientImpl=grpc-web \
+grpc_tools_ruby_protoc \
+    --ruby_out=./src/experior/grpc \
+    --grpc_out=./src/experior/grpc \
     --proto_path=`pwd`/src/sum \
     `pwd`/src/sum/sum.proto
 
@@ -15,4 +13,5 @@ protoc \
     --go_opt=paths=source_relative \
     --go-grpc_out=./src/sum/rpc \
     --go-grpc_opt=paths=source_relative \
-    ./src/sum/sum.proto
+    --proto_path=`pwd`/src/sum \
+    `pwd`/src/sum/sum.proto

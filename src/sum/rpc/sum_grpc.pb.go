@@ -34,7 +34,7 @@ func NewSessionsClient(cc grpc.ClientConnInterface) SessionsClient {
 
 func (c *sessionsClient) Create(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*Session, error) {
 	out := new(Session)
-	err := c.cc.Invoke(ctx, "/Sessions/Create", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sum.Sessions/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *sessionsClient) Create(ctx context.Context, in *CreateSessionRequest, o
 
 func (c *sessionsClient) Delete(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/Sessions/Delete", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sum.Sessions/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *sessionsClient) Delete(ctx context.Context, in *DeleteSessionRequest, o
 
 func (c *sessionsClient) List(ctx context.Context, in *ListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error) {
 	out := new(ListSessionsResponse)
-	err := c.cc.Invoke(ctx, "/Sessions/List", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sum.Sessions/List", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func _Sessions_Create_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Sessions/Create",
+		FullMethod: "/sum.Sessions/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SessionsServer).Create(ctx, req.(*CreateSessionRequest))
@@ -123,7 +123,7 @@ func _Sessions_Delete_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Sessions/Delete",
+		FullMethod: "/sum.Sessions/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SessionsServer).Delete(ctx, req.(*DeleteSessionRequest))
@@ -141,7 +141,7 @@ func _Sessions_List_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Sessions/List",
+		FullMethod: "/sum.Sessions/List",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SessionsServer).List(ctx, req.(*ListSessionsRequest))
@@ -153,7 +153,7 @@ func _Sessions_List_Handler(srv interface{}, ctx context.Context, dec func(inter
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Sessions_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Sessions",
+	ServiceName: "sum.Sessions",
 	HandlerType: (*SessionsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -194,7 +194,7 @@ func NewUsersClient(cc grpc.ClientConnInterface) UsersClient {
 
 func (c *usersClient) Create(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
-	err := c.cc.Invoke(ctx, "/Users/Create", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sum.Users/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (c *usersClient) Create(ctx context.Context, in *CreateUserRequest, opts ..
 
 func (c *usersClient) Delete(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
 	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/Users/Delete", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sum.Users/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func (c *usersClient) Delete(ctx context.Context, in *DeleteUserRequest, opts ..
 
 func (c *usersClient) Get(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
-	err := c.cc.Invoke(ctx, "/Users/Get", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sum.Users/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +221,7 @@ func (c *usersClient) Get(ctx context.Context, in *GetUserRequest, opts ...grpc.
 
 func (c *usersClient) List(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error) {
 	out := new(ListUsersResponse)
-	err := c.cc.Invoke(ctx, "/Users/List", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sum.Users/List", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (c *usersClient) List(ctx context.Context, in *ListUsersRequest, opts ...gr
 
 func (c *usersClient) Update(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
-	err := c.cc.Invoke(ctx, "/Users/Update", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/sum.Users/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +291,7 @@ func _Users_Create_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Users/Create",
+		FullMethod: "/sum.Users/Create",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UsersServer).Create(ctx, req.(*CreateUserRequest))
@@ -309,7 +309,7 @@ func _Users_Delete_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Users/Delete",
+		FullMethod: "/sum.Users/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UsersServer).Delete(ctx, req.(*DeleteUserRequest))
@@ -327,7 +327,7 @@ func _Users_Get_Handler(srv interface{}, ctx context.Context, dec func(interface
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Users/Get",
+		FullMethod: "/sum.Users/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UsersServer).Get(ctx, req.(*GetUserRequest))
@@ -345,7 +345,7 @@ func _Users_List_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Users/List",
+		FullMethod: "/sum.Users/List",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UsersServer).List(ctx, req.(*ListUsersRequest))
@@ -363,7 +363,7 @@ func _Users_Update_Handler(srv interface{}, ctx context.Context, dec func(interf
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/Users/Update",
+		FullMethod: "/sum.Users/Update",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UsersServer).Update(ctx, req.(*UpdateUserRequest))
@@ -375,7 +375,7 @@ func _Users_Update_Handler(srv interface{}, ctx context.Context, dec func(interf
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Users_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "Users",
+	ServiceName: "sum.Users",
 	HandlerType: (*UsersServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
