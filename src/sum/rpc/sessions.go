@@ -2,6 +2,7 @@ package rpc
 
 import (
 	context "context"
+	"fmt"
 	"nubes/sum/db"
 	"nubes/sum/services"
 	"nubes/sum/services/sessions"
@@ -18,6 +19,8 @@ type SessionsServerImpl struct {
 }
 
 func (s *SessionsServerImpl) Create(ctx context.Context, req *CreateSessionRequest) (*Session, error) {
+	fmt.Printf("GOT REQ\n")
+
 	username := req.Username
 	password := req.Password
 

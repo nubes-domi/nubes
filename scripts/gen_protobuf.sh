@@ -5,7 +5,9 @@ protoc \
     --plugin=./src/experior/node_modules/.bin/protoc-gen-ts_proto \
     --ts_proto_out=./src/experior/grpc \
     --ts_proto_opt=esModuleInterop=true \
-    ./src/sum/sum.proto
+    --ts_proto_opt=outputClientImpl=grpc-web \
+    --proto_path=`pwd`/src/sum \
+    `pwd`/src/sum/sum.proto
 
 # Rebuild the gRPC Server for sum
 protoc \
