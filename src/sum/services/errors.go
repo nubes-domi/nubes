@@ -33,7 +33,7 @@ func ToGrpcError(e error) error {
 	}
 
 	if errors.As(e, &forbidden) {
-		return status.Errorf(codes.PermissionDenied, validation.Error())
+		return status.Errorf(codes.PermissionDenied, forbidden.Error())
 	}
 
 	if errors.As(e, &validation) {
@@ -41,7 +41,7 @@ func ToGrpcError(e error) error {
 	}
 
 	if errors.As(e, &conflict) {
-		return status.Errorf(codes.Aborted, validation.Error())
+		return status.Errorf(codes.Aborted, conflict.Error())
 	}
 
 	return e
