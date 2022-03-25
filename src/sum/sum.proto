@@ -21,7 +21,7 @@ service Users {
 }
 
 message Session {
-    string authentication_token = 1;
+    string access_token = 1;
     google.protobuf.Timestamp updated_at = 2;
     string user_agent = 3;
     string ip_address = 4;

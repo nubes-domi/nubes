@@ -36,7 +36,7 @@ func Create(username, password, userAgent, ipAddress string) (*db.UserSession, e
 			log.Panicf("Could not build the JWT token: %v", err)
 		}
 
-		session.SignedToken = utils.JwtSign(token, "RS256")
+		session.SignedToken = utils.JwtSign(token, "ES256")
 		return session, nil
 	}
 }

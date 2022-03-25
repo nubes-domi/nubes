@@ -29,10 +29,10 @@ func (s *SessionsServerImpl) Create(ctx context.Context, req *CreateSessionReque
 		return nil, status.Errorf(codes.Unauthenticated, "invalid_credentials")
 	} else {
 		return &Session{
-			AuthenticationToken: session.SignedToken,
-			UpdatedAt:           timestamppb.New(session.UpdatedAt),
-			UserAgent:           session.UserAgent,
-			IpAddress:           session.IPAddress,
+			AccessToken: session.SignedToken,
+			UpdatedAt:   timestamppb.New(session.UpdatedAt),
+			UserAgent:   session.UserAgent,
+			IpAddress:   session.IPAddress,
 		}, nil
 	}
 }
