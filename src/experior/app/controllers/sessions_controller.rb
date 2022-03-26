@@ -1,27 +1,36 @@
 class SessionsController < ApplicationController
-  def index
-  end
+  before_action :ensure_identifier, only: [:show, :update]
 
   def new
   end
 
   def create
-    result = SUM_CLIENT.create(
-      Sum::CreateSessionRequest.new(
-        session: Sum::Session.new(
-          user_agent: request.user_agent,
-          ip_address: request.remote_addr
-        ),
-        username: params[:username],
-        password: params[:password]
-      )
-    )
+    result = Sessions.authentication_methods(params[:identifier])
+    if result.authentication_methods.any?
+      redirect_to authentication_path(result.authentication_methods.first, identifier: result.username)
+    else
+      flash[:errors] = { identifier: "Could not find a user with that name or email" }
+      redirect_to signin_path
+    end
+  end
 
-    cookies.permanent[:current_session] = result.access_token
-    cookies.permanent[:sessions] = [(cookies[:sessions] || ""), result.access_token].join("|")
-    redirect_to "/"
-  rescue GRPC::Unauthenticated
-    flash[:error] = "Invalid username or password"
-    redirect_to signin_path
+  def show
+  end
+
+  def update
+    response = Sessions.create(request, params[:identifier], password: params[:password])
+    if response
+      start_session(response)
+      redirect_to "/"
+    else
+      flash[:errors] = { password: "The password is incorrect" }
+      redirect_to authentication_path(params[:method], identifier: params[:identifier])
+    end
+  end
+
+  private
+
+  def ensure_identifier
+    redirect_to signin_path unless params[:identifier].present?
   end
 end

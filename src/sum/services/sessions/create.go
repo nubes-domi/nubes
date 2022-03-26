@@ -10,8 +10,8 @@ import (
 	"github.com/lestrrat-go/jwx/jwt"
 )
 
-func Create(username, password, userAgent, ipAddress string) (*db.UserSession, error) {
-	user, err := db.DB.Users().FindByCredentials(username, password)
+func Create(identifier, password, userAgent, ipAddress string) (*db.UserSession, error) {
+	user, err := db.DB.Users().FindByCredentials(identifier, password)
 	if err != nil {
 		return nil, errors.New("invalid_credentials")
 	} else {

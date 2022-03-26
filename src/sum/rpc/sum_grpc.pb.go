@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SessionsClient interface {
+	GetAuthenticationMethods(ctx context.Context, in *GetAuthenticationMethodsRequest, opts ...grpc.CallOption) (*GetAuthenticationMethodsResponse, error)
 	Create(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*Session, error)
 	Delete(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	Get(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*Session, error)
@@ -32,6 +33,15 @@ type sessionsClient struct {
 
 func NewSessionsClient(cc grpc.ClientConnInterface) SessionsClient {
 	return &sessionsClient{cc}
+}
+
+func (c *sessionsClient) GetAuthenticationMethods(ctx context.Context, in *GetAuthenticationMethodsRequest, opts ...grpc.CallOption) (*GetAuthenticationMethodsResponse, error) {
+	out := new(GetAuthenticationMethodsResponse)
+	err := c.cc.Invoke(ctx, "/sum.Sessions/GetAuthenticationMethods", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *sessionsClient) Create(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*Session, error) {
@@ -83,6 +93,7 @@ func (c *sessionsClient) Update(ctx context.Context, in *UpdateSessionRequest, o
 // All implementations must embed UnimplementedSessionsServer
 // for forward compatibility
 type SessionsServer interface {
+	GetAuthenticationMethods(context.Context, *GetAuthenticationMethodsRequest) (*GetAuthenticationMethodsResponse, error)
 	Create(context.Context, *CreateSessionRequest) (*Session, error)
 	Delete(context.Context, *DeleteSessionRequest) (*empty.Empty, error)
 	Get(context.Context, *GetSessionRequest) (*Session, error)
@@ -95,6 +106,9 @@ type SessionsServer interface {
 type UnimplementedSessionsServer struct {
 }
 
+func (UnimplementedSessionsServer) GetAuthenticationMethods(context.Context, *GetAuthenticationMethodsRequest) (*GetAuthenticationMethodsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAuthenticationMethods not implemented")
+}
 func (UnimplementedSessionsServer) Create(context.Context, *CreateSessionRequest) (*Session, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
@@ -121,6 +135,24 @@ type UnsafeSessionsServer interface {
 
 func RegisterSessionsServer(s grpc.ServiceRegistrar, srv SessionsServer) {
 	s.RegisterService(&Sessions_ServiceDesc, srv)
+}
+
+func _Sessions_GetAuthenticationMethods_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAuthenticationMethodsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SessionsServer).GetAuthenticationMethods(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sum.Sessions/GetAuthenticationMethods",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SessionsServer).GetAuthenticationMethods(ctx, req.(*GetAuthenticationMethodsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Sessions_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -220,6 +252,10 @@ var Sessions_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "sum.Sessions",
 	HandlerType: (*SessionsServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetAuthenticationMethods",
+			Handler:    _Sessions_GetAuthenticationMethods_Handler,
+		},
 		{
 			MethodName: "Create",
 			Handler:    _Sessions_Create_Handler,

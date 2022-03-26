@@ -12,7 +12,7 @@ import (
 )
 
 func getAuthorizationWhitelistedEndpoints() []string {
-	return []string{"/sum.Sessions/Create", "/sum.Sessions/Get"}
+	return []string{"/sum.Sessions/Create", "/sum.Sessions/Get", "/sum.Sessions/GetAuthenticationMethods"}
 }
 
 func ServerInterceptor(

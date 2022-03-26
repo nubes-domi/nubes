@@ -14,6 +14,7 @@ module Sum
       self.unmarshal_class_method = :decode
       self.service_name = 'sum.Sessions'
 
+      rpc :GetAuthenticationMethods, ::Sum::GetAuthenticationMethodsRequest, ::Sum::GetAuthenticationMethodsResponse
       rpc :Create, ::Sum::CreateSessionRequest, ::Sum::Session
       rpc :Delete, ::Sum::DeleteSessionRequest, ::Google::Protobuf::Empty
       rpc :Get, ::Sum::GetSessionRequest, ::Sum::Session

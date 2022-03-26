@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
@@ -87,8 +86,6 @@ func GenID(t string) string {
 		id[i] = alphabet[int(randBuf[i])%len(alphabet)]
 		i += 1
 	}
-
-	fmt.Printf("ID: %s", t+"_"+string(id))
 
 	return t + "_" + string(id)
 }

@@ -1,0 +1,17 @@
+<div class="d-flex justify-center align-center h-100vh">
+  <div class="signin-form flex-grow">
+    <h1 class="text-center mb-1"><%= params[:identifier] %></h1>
+    <p class="text-center mb-2">Please confirm your identity</p>
+
+    <%#
+      TODO
+      If the Sign in was requested by an OIDC app, add:
+      <div>to continue to app</div>
+    %>
+
+    <%= form_with url: authentication_path(params[:method]) do |f| %>
+      <%= f.hidden_field :identifier, value: params[:identifier] %>
+      <%= render params[:method] %>
+    <% end %>
+  </div>
+</div>

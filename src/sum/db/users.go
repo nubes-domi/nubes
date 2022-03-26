@@ -4,6 +4,7 @@ import (
 	"errors"
 	"nubes/sum/utils"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -62,21 +63,37 @@ func (r *UserRepository) FindById(id string) (*User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) FindByCredentials(identifier, password string) (*User, error) {
+func (r *UserRepository) FindByIdentifier(identifier string) (*User, error) {
+	if identifier == "" {
+		return nil, gorm.ErrRecordNotFound
+	}
+
 	user := User{}
 
-	res := r.handle.First(&user, "username = ?", identifier)
+	identifier = strings.ToLower(identifier)
+	res := r.handle.First(&user, "lower(username) = ? OR lower(email) = ?", identifier, identifier)
 	if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 		return &User{}, res.Error
 	} else if res.Error != nil {
 		panic(res.Error)
 	}
 
+	return &user, nil
+}
+
+func (r *UserRepository) FindByCredentials(identifier, password string) (*User, error) {
+	user, err := r.FindByIdentifier(identifier)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &User{}, err
+	} else if err != nil {
+		panic(err)
+	}
+
 	if !user.VerifyPassword(password) {
 		return &User{}, errors.New("Invalid username or password")
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (r *UserRepository) List(orderBy string) []*User {

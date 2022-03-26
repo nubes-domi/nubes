@@ -3,17 +3,21 @@ Rails.application.routes.draw do
   # Signing in / Changing accounts
   ######
 
-  # Sign in screen
+  # Identification (username / email)
   get "signin", to: "sessions#new"
   post "signin", to: "sessions#create"
+
+  # Authentication (password / webauthn)
+  get "signin/:method", to: "sessions#show", as: :authentication
+  post "signin/:method", to: "sessions#update"
 
   # Reauthentication
   get "reauth", to: "sessions#edit"
   post "reauth", to: "sessions#update"
 
   # Account switcher
-  get "change-account", to: "switcher#index"
-  post "change-account", to: "switcher#create"
+  get "change-account", to: "account_switcher#index"
+  post "change-account", to: "account_switcher#create"
 
   ######
   # OpenID Connect

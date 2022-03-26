@@ -15,9 +15,17 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :ip_address, :string, 4
       optional :user, :message, 5, "sum.User"
     end
+    add_message "sum.GetAuthenticationMethodsRequest" do
+      optional :identifier, :string, 1
+    end
+    add_message "sum.GetAuthenticationMethodsResponse" do
+      repeated :authentication_methods, :string, 1
+      optional :username, :string, 2
+      optional :picture, :string, 3
+    end
     add_message "sum.CreateSessionRequest" do
       optional :session, :message, 1, "sum.Session"
-      optional :username, :string, 2
+      optional :identifier, :string, 2
       optional :password, :string, 3
     end
     add_message "sum.DeleteSessionRequest" do
@@ -80,6 +88,8 @@ end
 
 module Sum
   Session = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.Session").msgclass
+  GetAuthenticationMethodsRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.GetAuthenticationMethodsRequest").msgclass
+  GetAuthenticationMethodsResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.GetAuthenticationMethodsResponse").msgclass
   CreateSessionRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.CreateSessionRequest").msgclass
   DeleteSessionRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.DeleteSessionRequest").msgclass
   GetSessionRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.GetSessionRequest").msgclass

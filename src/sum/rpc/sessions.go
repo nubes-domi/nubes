@@ -17,11 +17,25 @@ type SessionsServerImpl struct {
 	UnimplementedSessionsServer
 }
 
+func (s *SessionsServerImpl) GetAuthenticationMethods(ctx context.Context, req *GetAuthenticationMethodsRequest) (*GetAuthenticationMethodsResponse, error) {
+	identifier := req.Identifier
+
+	user, methods, err := sessions.GetAuthenticationMethods(identifier)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid_credentials")
+	} else {
+		return &GetAuthenticationMethodsResponse{
+			Username:              user.Username,
+			AuthenticationMethods: methods,
+		}, nil
+	}
+}
+
 func (s *SessionsServerImpl) Create(ctx context.Context, req *CreateSessionRequest) (*Session, error) {
-	username := req.Username
+	identifier := req.Identifier
 	password := req.Password
 
-	session, err := sessions.Create(username, password, req.Session.UserAgent, req.Session.IpAddress)
+	session, err := sessions.Create(identifier, password, req.Session.UserAgent, req.Session.IpAddress)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid_credentials")
 	} else {

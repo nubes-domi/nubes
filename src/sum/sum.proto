@@ -7,6 +7,8 @@ package sum;
 option go_package = "./rpc";
 
 service Sessions {
+    rpc GetAuthenticationMethods(GetAuthenticationMethodsRequest) returns (GetAuthenticationMethodsResponse);
+
     rpc Create(CreateSessionRequest) returns (Session);
     rpc Delete(DeleteSessionRequest) returns (google.protobuf.Empty);
     rpc Get(GetSessionRequest) returns (Session);
@@ -30,10 +32,20 @@ message Session {
     User user = 5;
 }
 
+message GetAuthenticationMethodsRequest {
+    string identifier = 1;
+}
+
+message GetAuthenticationMethodsResponse {
+    repeated string authentication_methods = 1;
+    string username = 2;
+    string picture = 3;
+}
+
 message CreateSessionRequest {
     Session session = 1;
 
-    string username = 2;
+    string identifier = 2;
     string password = 3;
 }
 

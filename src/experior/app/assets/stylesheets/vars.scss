@@ -1,0 +1,29 @@
+:root {
+    /**
+     * Palette definition
+     *
+     * Colors are defined as "naked" rgb triples.
+     * This is to use them in different rgb(rgb, opacity) combinations.
+     */
+
+    --rgb-black: 0, 0, 0;
+    --rgb-white: 255, 255, 255;
+
+    --rgb-dark-background: 25, 40, 50;
+    --rgb-light-text: 235, 233, 231;
+
+    --background-color: rgb(var(--rgb-white));
+    --copy-color: rgb(var(--rgb-black));
+
+    --rgb-primary: 26, 112, 240;
+    --rgb-primary-dark-1: 15, 100, 224;
+    --rgb-primary-dark-2: 13, 88, 200;
+    --rgb-error: 255, 100, 100;
+
+    --rgb-gold: 110, 105, 40;
+
+    @media (prefers-color-scheme: dark) {
+        --background-color: rgb(var(--rgb-dark-background));
+        --copy-color: rgb(var(--rgb-light-text));
+    }
+}
