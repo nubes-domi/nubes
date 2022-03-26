@@ -67,6 +67,14 @@ func (r *UserSessionRepository) DeleteFor(ID string, userID string) error {
 	return nil
 }
 
+func (r *UserSessionRepository) Update(userSession *UserSession) (*UserSession, error) {
+	if err := r.handle.Save(userSession).Error; err != nil {
+		panic(err)
+	}
+
+	return userSession, nil
+}
+
 func (r *UserSessionRepository) CleanupExpired() {
 	if err := r.handle.Where("expires_at < date('now')").Delete(&UserSession{}).Error; err != nil {
 		panic(err)

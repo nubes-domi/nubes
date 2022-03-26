@@ -16,7 +16,9 @@ module Sum
 
       rpc :Create, ::Sum::CreateSessionRequest, ::Sum::Session
       rpc :Delete, ::Sum::DeleteSessionRequest, ::Google::Protobuf::Empty
+      rpc :Get, ::Sum::GetSessionRequest, ::Sum::Session
       rpc :List, ::Sum::ListSessionsRequest, ::Sum::ListSessionsResponse
+      rpc :Update, ::Sum::UpdateSessionRequest, ::Sum::Session
     end
 
     Stub = Service.rpc_stub_class

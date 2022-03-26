@@ -12,7 +12,7 @@ import (
 )
 
 func getAuthorizationWhitelistedEndpoints() []string {
-	return []string{"/sum.Sessions/Create"}
+	return []string{"/sum.Sessions/Create", "/sum.Sessions/Get"}
 }
 
 func ServerInterceptor(
@@ -37,9 +37,13 @@ func authorize(ctx context.Context, info *grpc.UnaryServerInfo) (context.Context
 
 	if auth, ok := md["authorization"]; ok {
 		if token, err := utils.JwtVerify(auth[0]); err == nil {
-			sub := token.Subject()
-			if user, err := db.DB.Users().FindById(sub); err == nil {
-				return context.WithValue(ctx, "CurrentUser", user), nil
+			if session, err := db.DB.UserSessions().FindById(token.JwtID()); err == nil {
+				sub := token.Subject()
+				if user, err := db.DB.Users().FindById(sub); err == nil {
+					ctx = context.WithValue(ctx, "CurrentSession", session)
+					ctx = context.WithValue(ctx, "CurrentUser", user)
+					return ctx, nil
+				}
 			}
 		}
 	}
@@ -58,4 +62,13 @@ func currentUser(ctx context.Context) *db.User {
 	}
 
 	return user
+}
+
+func currentSession(ctx context.Context) *db.UserSession {
+	session, ok := ctx.Value("CurrentSession").(*db.UserSession)
+	if !ok {
+		panic("Could not retrieve CurrentSession in gRPC")
+	}
+
+	return session
 }

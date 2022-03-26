@@ -2,7 +2,6 @@ package rpc
 
 import (
 	context "context"
-	"fmt"
 	"nubes/sum/db"
 	"nubes/sum/services"
 	"nubes/sum/services/sessions"
@@ -19,8 +18,6 @@ type SessionsServerImpl struct {
 }
 
 func (s *SessionsServerImpl) Create(ctx context.Context, req *CreateSessionRequest) (*Session, error) {
-	fmt.Printf("GOT REQ\n")
-
 	username := req.Username
 	password := req.Password
 
@@ -43,6 +40,21 @@ func (s *SessionsServerImpl) Delete(ctx context.Context, req *DeleteSessionReque
 	return &empty.Empty{}, nil
 }
 
+func (s *SessionsServerImpl) Get(ctx context.Context, req *GetSessionRequest) (*Session, error) {
+	token := req.AuthenticationToken
+	session, err := sessions.Get(token)
+	if err != nil {
+		return nil, services.ToGrpcError(err)
+	} else {
+		return &Session{
+			AccessToken: token,
+			UpdatedAt:   timestamppb.New(session.UpdatedAt),
+			UserAgent:   session.UserAgent,
+			IpAddress:   session.IPAddress,
+		}, nil
+	}
+}
+
 func (s *SessionsServerImpl) List(ctx context.Context, req *ListSessionsRequest) (*ListSessionsResponse, error) {
 	list, err := sessions.List(currentUser(ctx), req.OrderBy)
 	if err != nil {
@@ -58,4 +70,18 @@ func (s *SessionsServerImpl) List(ctx context.Context, req *ListSessionsRequest)
 			}
 		}),
 	}, nil
+}
+
+func (s *SessionsServerImpl) Update(ctx context.Context, req *UpdateSessionRequest) (*Session, error) {
+	session, err := sessions.Update(currentUser(ctx), currentSession(ctx), req.Password)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid_credentials")
+	} else {
+		return &Session{
+			AccessToken: session.SignedToken,
+			UpdatedAt:   timestamppb.New(session.UpdatedAt),
+			UserAgent:   session.UserAgent,
+			IpAddress:   session.IPAddress,
+		}, nil
+	}
 }

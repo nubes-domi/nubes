@@ -13,6 +13,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :updated_at, :message, 2, "google.protobuf.Timestamp"
       optional :user_agent, :string, 3
       optional :ip_address, :string, 4
+      optional :user, :message, 5, "sum.User"
     end
     add_message "sum.CreateSessionRequest" do
       optional :session, :message, 1, "sum.Session"
@@ -21,6 +22,12 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     end
     add_message "sum.DeleteSessionRequest" do
       optional :session_id, :string, 1
+    end
+    add_message "sum.GetSessionRequest" do
+      optional :authentication_token, :string, 1
+    end
+    add_message "sum.UpdateSessionRequest" do
+      optional :password, :string, 1
     end
     add_message "sum.ListSessionsRequest" do
       optional :page_token, :string, 1
@@ -75,6 +82,8 @@ module Sum
   Session = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.Session").msgclass
   CreateSessionRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.CreateSessionRequest").msgclass
   DeleteSessionRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.DeleteSessionRequest").msgclass
+  GetSessionRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.GetSessionRequest").msgclass
+  UpdateSessionRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.UpdateSessionRequest").msgclass
   ListSessionsRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.ListSessionsRequest").msgclass
   ListSessionsResponse = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.ListSessionsResponse").msgclass
   CreateUserRequest = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("sum.CreateUserRequest").msgclass

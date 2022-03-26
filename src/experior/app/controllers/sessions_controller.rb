@@ -1,4 +1,7 @@
 class SessionsController < ApplicationController
+  def index
+  end
+
   def new
   end
 
@@ -15,7 +18,8 @@ class SessionsController < ApplicationController
     )
 
     cookies.permanent[:current_session] = result.access_token
-    redirect_to '/'
+    cookies.permanent[:sessions] = [(cookies[:sessions] || ""), result.access_token].join("|")
+    redirect_to "/"
   rescue GRPC::Unauthenticated
     flash[:error] = "Invalid username or password"
     redirect_to signin_path

@@ -9,7 +9,9 @@ option go_package = "./rpc";
 service Sessions {
     rpc Create(CreateSessionRequest) returns (Session);
     rpc Delete(DeleteSessionRequest) returns (google.protobuf.Empty);
+    rpc Get(GetSessionRequest) returns (Session);
     rpc List(ListSessionsRequest) returns (ListSessionsResponse);
+    rpc Update(UpdateSessionRequest) returns (Session);
 }
 
 service Users {
@@ -25,6 +27,7 @@ message Session {
     google.protobuf.Timestamp updated_at = 2;
     string user_agent = 3;
     string ip_address = 4;
+    User user = 5;
 }
 
 message CreateSessionRequest {
@@ -36,6 +39,14 @@ message CreateSessionRequest {
 
 message DeleteSessionRequest {
     string session_id = 1;
+}
+
+message GetSessionRequest {
+    string authentication_token = 1;
+}
+
+message UpdateSessionRequest {
+    string password = 1;
 }
 
 message ListSessionsRequest {

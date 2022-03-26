@@ -21,7 +21,9 @@ const _ = grpc.SupportPackageIsVersion7
 type SessionsClient interface {
 	Create(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*Session, error)
 	Delete(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Get(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*Session, error)
 	List(ctx context.Context, in *ListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error)
+	Update(ctx context.Context, in *UpdateSessionRequest, opts ...grpc.CallOption) (*Session, error)
 }
 
 type sessionsClient struct {
@@ -50,9 +52,27 @@ func (c *sessionsClient) Delete(ctx context.Context, in *DeleteSessionRequest, o
 	return out, nil
 }
 
+func (c *sessionsClient) Get(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*Session, error) {
+	out := new(Session)
+	err := c.cc.Invoke(ctx, "/sum.Sessions/Get", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *sessionsClient) List(ctx context.Context, in *ListSessionsRequest, opts ...grpc.CallOption) (*ListSessionsResponse, error) {
 	out := new(ListSessionsResponse)
 	err := c.cc.Invoke(ctx, "/sum.Sessions/List", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sessionsClient) Update(ctx context.Context, in *UpdateSessionRequest, opts ...grpc.CallOption) (*Session, error) {
+	out := new(Session)
+	err := c.cc.Invoke(ctx, "/sum.Sessions/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +85,9 @@ func (c *sessionsClient) List(ctx context.Context, in *ListSessionsRequest, opts
 type SessionsServer interface {
 	Create(context.Context, *CreateSessionRequest) (*Session, error)
 	Delete(context.Context, *DeleteSessionRequest) (*empty.Empty, error)
+	Get(context.Context, *GetSessionRequest) (*Session, error)
 	List(context.Context, *ListSessionsRequest) (*ListSessionsResponse, error)
+	Update(context.Context, *UpdateSessionRequest) (*Session, error)
 	mustEmbedUnimplementedSessionsServer()
 }
 
@@ -79,8 +101,14 @@ func (UnimplementedSessionsServer) Create(context.Context, *CreateSessionRequest
 func (UnimplementedSessionsServer) Delete(context.Context, *DeleteSessionRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
+func (UnimplementedSessionsServer) Get(context.Context, *GetSessionRequest) (*Session, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
 func (UnimplementedSessionsServer) List(context.Context, *ListSessionsRequest) (*ListSessionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (UnimplementedSessionsServer) Update(context.Context, *UpdateSessionRequest) (*Session, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
 func (UnimplementedSessionsServer) mustEmbedUnimplementedSessionsServer() {}
 
@@ -131,6 +159,24 @@ func _Sessions_Delete_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Sessions_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SessionsServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sum.Sessions/Get",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SessionsServer).Get(ctx, req.(*GetSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Sessions_List_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListSessionsRequest)
 	if err := dec(in); err != nil {
@@ -145,6 +191,24 @@ func _Sessions_List_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SessionsServer).List(ctx, req.(*ListSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Sessions_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SessionsServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sum.Sessions/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SessionsServer).Update(ctx, req.(*UpdateSessionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -165,8 +229,16 @@ var Sessions_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Sessions_Delete_Handler,
 		},
 		{
+			MethodName: "Get",
+			Handler:    _Sessions_Get_Handler,
+		},
+		{
 			MethodName: "List",
 			Handler:    _Sessions_List_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _Sessions_Update_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
