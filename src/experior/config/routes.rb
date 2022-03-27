@@ -40,4 +40,12 @@ Rails.application.routes.draw do
     get "userinfo", to: "userinfo#show"
     post "userinfo", to: "userinfo#show"
   end
+
+  ######
+  # Nubes Administration
+  ######
+
+  namespace :admin do
+    resources :users
+  end
 end

@@ -17,6 +17,7 @@ type UsersServerImpl struct {
 
 func buildUserFromDb(u *db.User) *User {
 	return &User{
+		Id:          u.ID,
 		Admin:       u.Admin,
 		Username:    u.Username,
 		Name:        u.Name,

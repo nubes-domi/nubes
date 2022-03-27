@@ -32,6 +32,20 @@ label {
 @import "vars";
 @import "common";
 @import "components/alerts";
+@import "components/badges";
 @import "components/buttons";
 @import "components/forms";
 @import "modules/signin";
+@import "modules/user-profile-image";
+
+// TODO: relocate
+.row-link {
+    text-decoration: none;
+    color: inherit;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+
+    &:hover {
+        background-color: rgba(white, .03);
+    }
+}

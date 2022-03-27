@@ -1,0 +1,18 @@
+<% ((@users + @users) * 3).each do |user| %>
+  <%= link_to admin_user_path(user), class: "d-flex align-center row-link" do %>
+    <%= render UserProfileImageComponent.new(user: user, size: "lg") %>
+    <div class="ml-1">
+      <% if user.name.present? %>
+        <%= user.name %>
+      <% else %>
+        <%= user.username %>
+      <% end %>
+    </div>
+
+    <% if user.admin %>
+      <div class="ml-auto badge badge--primary">
+        admin
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

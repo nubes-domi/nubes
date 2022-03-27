@@ -1,7 +1,7 @@
 module Sessions
   class << self
     def authentication_methods(identifier)
-      SUM_CLIENT.get_authentication_methods(
+      SUM_SESSIONS.get_authentication_methods(
         Sum::GetAuthenticationMethodsRequest.new(identifier: identifier)
       )
     rescue GRPC::Unauthenticated
@@ -9,7 +9,7 @@ module Sessions
     end
 
     def create(request, identifier, password:)
-      SUM_CLIENT.create(
+      SUM_SESSIONS.create(
         Sum::CreateSessionRequest.new(
           identifier: identifier, password: password,
           session: Sum::Session.new(

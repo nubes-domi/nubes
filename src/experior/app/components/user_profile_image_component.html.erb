@@ -1,0 +1,12 @@
+<% if picture? %>
+<% else %>
+  <div
+    aria-hidden
+    class="d-flex justify-center align-center user-profile-image user-profile-image--<%= @size %> <%= @class %>"
+    style="background-color: <%= placeholder_color %>"
+    <% @attrs.each do |k, v| %>
+      <%= k %>="<%= v %>"
+    <% end %>>
+    <%= placeholder_letters %>
+  </div>
+<% end %>

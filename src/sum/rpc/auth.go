@@ -2,6 +2,7 @@ package rpc
 
 import (
 	context "context"
+	"fmt"
 	"nubes/sum/db"
 	"nubes/sum/utils"
 
@@ -31,6 +32,7 @@ func ServerInterceptor(
 
 func authorize(ctx context.Context, info *grpc.UnaryServerInfo) (context.Context, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
+	fmt.Printf("MMMM: %v\n", md)
 	if !ok {
 		return ctx, status.Errorf(codes.InvalidArgument, "Could not retrieve request metadata")
 	}

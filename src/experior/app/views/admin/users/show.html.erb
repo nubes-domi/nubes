@@ -1,0 +1,16 @@
+<div class="text-center">
+  <%= render UserProfileImageComponent.new(user: @user, size: "xl", klass: "mb-1") %>
+  <h1 class="text-xxl">
+    <% if @user.name.present? %>
+      <%= @user.name %>
+    <% else %>
+      <%= @user.username %>
+    <% end %>
+  </h1>
+
+  <% if @user.admin %>
+    <div class="alert alert--error" style="display: inline-block;">
+      This user is a Nubes admin
+    </div>
+  <% end %>
+</div>

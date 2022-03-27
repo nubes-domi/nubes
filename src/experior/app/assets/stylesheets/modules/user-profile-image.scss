@@ -1,0 +1,18 @@
+.user-profile-image {
+    display: inline-flex;
+    border-radius: 100%;
+    font-weight: bold;
+
+    &--lg {
+        height: 3rem;
+        width: 3rem;
+        font-size: 1.25rem
+    }
+
+    &--xl {
+        height: 6rem;
+        width: 6rem;
+        font-size: 2.5rem;
+        font-weight: 500;
+    }
+}
