@@ -1,0 +1,8 @@
+.alert {
+    padding: 1rem;
+    border-radius: 0.5rem;
+
+    &--error {
+        background-color: rgb(var(--rgb-error));
+    }
+}

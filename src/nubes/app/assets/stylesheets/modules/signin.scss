@@ -1,0 +1,15 @@
+.signin-form {
+    box-sizing: border-box;
+    max-width: 32rem;
+    flex: 1;
+    background-color: #27323e;
+    height: 100%;
+    padding: 5rem 4rem;
+
+    @media (min-width: 32rem) {
+        border-radius: 1.875rem;
+        height: auto;
+        padding: 5rem;
+        margin: 0 2rem;
+    }
+}

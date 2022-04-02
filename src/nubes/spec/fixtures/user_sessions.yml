@@ -1,0 +1,5 @@
+joe1:
+    user: joe
+    expires_at: <%= 10.years.from_now %>
+    ip_address: 127.0.0.1
+    user_agent: nubes/0.0.1
