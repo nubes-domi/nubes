@@ -21,6 +21,10 @@ gem "turbo-rails"
 gem "stimulus-rails"
 
 gem "bcrypt"
+gem "jwt"
+gem "rbnacl"
+gem "trailblazer-rails"
+gem "trailblazer-operation"
 gem "view_component"
 
 group :development, :test do
@@ -34,6 +38,10 @@ group :development do
   gem "rubocop"
   gem "rubocop-rails"
   gem "rubocop-rspec"
+end
+
+group :test do
+  gem 'simplecov', require: false
 end
 
 # For Windows

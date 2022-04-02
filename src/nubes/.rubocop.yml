@@ -13,6 +13,9 @@ AllCops:
 Bundler/OrderedGems:
   Enabled: false
 
+Layout/FirstHashElementIndentation:
+  EnforcedStyle: consistent
+
 Style/Documentation:
   Enabled: false
 
@@ -20,6 +23,9 @@ Style/EmptyMethod:
   EnforcedStyle: expanded
 
 Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/MultilineBlockChain:
   Enabled: false
 
 Style/StringLiterals:
