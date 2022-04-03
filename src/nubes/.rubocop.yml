@@ -16,6 +16,10 @@ Bundler/OrderedGems:
 Layout/FirstHashElementIndentation:
   EnforcedStyle: consistent
 
+Metrics/BlockLength:
+  Exclude:
+    - spec/**/*
+
 Style/Documentation:
   Enabled: false
 

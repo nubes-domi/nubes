@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Nubes</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+  </head>
+
+  <body>
+    <div style="max-width: 75rem; margin: 3rem auto;">
+      <%= yield %>
+
+      <% if action_name != "index" %>
+        <h3 class="mt-1">Generated code:</h3>
+        <pre>
+          <%= "" + yield %>
+        </pre>
+      <% end %>
+    </div>
+  </body>
+</html>

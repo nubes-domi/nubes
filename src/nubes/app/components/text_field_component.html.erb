@@ -3,7 +3,7 @@
     type="<%= @type %>"
     id="<%= @id %>"
     name="<%= @name %>"
-    class="text-control<% if @size %> text-control--<%= @size %><% end %><% if @error %> invalid<% end %>"
+    class="text-control<% if @size %> text-control--<%= @size %><% end %><% if @error %> invalid<% end %> <%= @class %>"
     <% if @error %>aria-invalid="true"<% end %>
     <% if @required %>required<% end %>
     <% if @autofocus %>autofocus<% end %>

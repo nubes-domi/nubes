@@ -3,9 +3,9 @@ require "rails_helper"
 RSpec.describe Sessions::Operation::Start do
   fixtures :users
 
-  let(:request) {
+  let(:request) do
     double(user_agent: "nubes/0.0.1", remote_addr: "127.0.0.1")
-  }
+  end
 
   it "succeeds with valid credentials" do
     result = described_class.wtf?(params: {

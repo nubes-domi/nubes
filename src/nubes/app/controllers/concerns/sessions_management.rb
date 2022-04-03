@@ -18,7 +18,7 @@ module SessionsManagement
   end
 
   def switch_session(token)
-    if active_sessions.value?(token)
+    if active_sessions.key?(token)
       cookies[:current_session] = token
     else
       false
@@ -43,7 +43,12 @@ module SessionsManagement
   end
 
   def session_for(user_id)
-    active_sessions.find { |_, session| session.user_id == user_id }
+    active_sessions.values.find { |session| session.user_id == user_id }
+  end
+
+  def session_token_for(user_id)
+    pair = active_sessions.find { |_, session| session.user_id == user_id }
+    pair[0] if pair
   end
 
   private

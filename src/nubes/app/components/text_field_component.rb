@@ -8,6 +8,7 @@ class TextFieldComponent < ViewComponent::Base
     @autofocus = attrs.delete(:autofocus)
     @size = attrs.delete(:size)
     @error = attrs.delete(:error)
+    @class = attrs.delete(:klass)
     @attrs = attrs
   end
 end

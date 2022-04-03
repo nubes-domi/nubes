@@ -3,3 +3,9 @@ joe1:
     expires_at: <%= 10.years.from_now %>
     ip_address: 127.0.0.1
     user_agent: nubes/0.0.1
+
+jane1:
+    user: jane
+    expires_at: <%= 10.years.from_now %>
+    ip_address: 127.0.0.1
+    user_agent: nubes/0.0.1

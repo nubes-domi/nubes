@@ -30,6 +30,8 @@ gem "view_component"
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
   gem "rspec-rails"
+
+  gem "htmlbeautifier"
 end
 
 group :development do
@@ -41,7 +43,8 @@ group :development do
 end
 
 group :test do
-  gem 'simplecov', require: false
+  gem "capybara"
+  gem "simplecov", require: false
 end
 
 # For Windows

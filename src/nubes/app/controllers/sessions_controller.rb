@@ -1,5 +1,5 @@
 class SessionsController < ApplicationController
-  before_action :prevent_duplicate_sessions, only: %i[create show update]
+  before_action :prevent_duplicate_sessions, only: %i[show update]
 
   def new
   end
@@ -42,14 +42,14 @@ class SessionsController < ApplicationController
 
     if current_user.id != params[:user_id]
       # TODO: reauthenticate if needed
-      switch_session(session_for(params[:user_id]))
+      switch_session(session_token_for(params[:user_id]))
     end
 
     signin_continue
   end
 
   def signin_continue
-    if params[:continue].starts_with?("/")
+    if params[:continue].present? && params[:continue].starts_with?("/")
       redirect_to params[:continue]
     else
       redirect_to root_path
