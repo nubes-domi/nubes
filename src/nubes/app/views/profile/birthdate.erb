@@ -1,48 +1,22 @@
-<div class="text-center">
-  <%= render UserProfileImageComponent.new(user: @user, size: "xl", klass: "mb-1") %>
-  <h1 class="text-xxl">
-    <%= @user.name.presence || @user.username %>
-  </h1>
-</div>
-
-<div class="d-flex profile">
-  <%= render "sidebar" %>
-
-  <div class="px-1">
-    <p>
-      Your profile on Nubes. This information is used for referring to you 
-      appropriately, for wishing you a happy birthday, for security purposes 
-      and to let you sign in to third parties in a click.
-    </p>
-
-    <h2>Update your date of birth</h2>
-
-    <turbo-frame id="basic-info">
-      <%= form_with model: @user, url: me_path, class: "space-y-1", html: { "data-turbo-action" => "advance" } do |f| %>
-        <div>
-          <%= f.label :birthdate do %>Birthday<% end %>
-          <%= render TextFieldComponent.new(
-            id: "user_birthdate",
-            name: "user[birthdate]",
-            value: @user.birthdate,
-            max: Date.today.iso8601,
-            type: :date,
-            autofocus: true
-          ) %>
-        </div>
-
-        <details>
-          <summary>How is your date of birth used?</summary>
-          <ul>
-            <li>To wish you a happy birthday.</li>
-            <li>To generate shareable Contacts cards (digital business cards).</li>
-            <li>If you use <i>OpenID Connect</i>, the website you sign in to may ask for your date of birth. You may then refuse to share it.</li>
-          </ul>
-        </details>
-        
-        <%= link_to "Back", me_path, class: "btn btn--outline-secondary" %>
-        <button class="btn btn--primary" type="submit">Save</button>
-      <% end %>
-    </turbo-frame>
+<%= render "edit", title: "Update your date of birth" do |f| %>
+  <div>
+    <%= f.label :birthdate do %>Birthday<% end %>
+    <%= render TextFieldComponent.new(
+      id: "user_birthdate",
+      name: "user[birthdate]",
+      value: @user.birthdate,
+      max: Date.today.iso8601,
+      type: :date,
+      autofocus: true
+    ) %>
   </div>
-</div>
+
+  <details>
+    <summary>How is your date of birth used?</summary>
+    <ul>
+      <li>To wish you a happy birthday.</li>
+      <li>To generate shareable Contacts cards (digital business cards).</li>
+      <li>If you use <i>OpenID Connect</i>, the website you sign in to may ask for your date of birth. You may then refuse to share it.</li>
+    </ul>
+  </details>
+<% end %>

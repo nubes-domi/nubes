@@ -1,0 +1,6 @@
+<div class="text-center">
+  <%= render UserProfileImageComponent.new(user: @user, size: "xl", klass: "mb-1") %>
+  <h1 class="text-xxl">
+    <%= @user.name.presence || @user.username %>
+  </h1>
+</div>

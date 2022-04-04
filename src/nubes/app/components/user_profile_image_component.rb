@@ -10,7 +10,7 @@ class UserProfileImageComponent < ViewComponent::Base
   end
 
   def picture?
-    false #@user.picture.present?
+    false # @user.picture.present?
   end
 
   def placeholder_color

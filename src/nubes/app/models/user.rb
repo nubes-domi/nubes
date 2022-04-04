@@ -28,6 +28,18 @@ class User < ApplicationRecord
     end
   end
 
+  def next_birthday
+    return unless birthdate
+
+    date = birthdate.strftime("%m%d")
+    date = "0228" if date == "0229" && !Date.today.leap?
+
+    year = Date.today.year
+    year += 1 if date < Date.today.strftime("%m%d")
+
+    Date.parse("#{year}#{date}")
+  end
+
   class << self
     def identify(identifier)
       return nil unless identifier.present?

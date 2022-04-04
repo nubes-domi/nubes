@@ -26,8 +26,9 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 500;
 }
 
-p {
+p, ul {
     margin-top: 0;
+    line-height: 1.4;
 }
 
 label {
@@ -46,15 +47,3 @@ label {
 @import "modules/profile";
 @import "modules/signin";
 @import "modules/user-profile-image";
-
-// TODO: relocate
-.row-link {
-    text-decoration: none;
-    color: inherit;
-    padding: 0.5rem 1rem;
-    margin-bottom: 0.5rem;
-
-    &:hover {
-        background-color: rgba(white, .03);
-    }
-}

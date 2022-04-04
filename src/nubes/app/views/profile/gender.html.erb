@@ -1,74 +1,47 @@
-<div class="text-center">
-  <%= render UserProfileImageComponent.new(user: @user, size: "xl", klass: "mb-1") %>
-  <h1 class="text-xxl">
-    <%= @user.name.presence || @user.username %>
-  </h1>
-</div>
+<%= render "edit", title: "Update gender details" do |f| %>
+  <div data-controller="edit-gender-form" class="space-y-1">
+    <div>
+      <%= f.label :gender do %>Gender<% end %>
+      <%= f.select :gender, options_for_select(
+          [
+            ["I'd rather not say", ""],
+            ["Female", "female"],
+            ["Male", "male"],
+            ["Other", "other"],
+          ], @user.gender
+        ), {}, autofocus: true, class: "text-control", "data-edit-gender-form-target" => "select", "data-action" => "input->edit-gender-form#update"
+      %>
+    </div>
 
-<div class="d-flex profile">
-  <%= render "sidebar" %>
+    <div data-edit-gender-form-target="other" style="display: none">
+      <label for="other_gender">Other gender name</label>
+      <%= render TextFieldComponent.new(
+          id: "other_gender",
+          name: "",
+          value: !@user.gender.in?(["male", "female"]) ? @user.gender : "",
+          "data-edit-gender-form-target" => "otherField"
+        )
+      %>
+    </div>
 
-  <div class="px-1">
-    <p>
-      Your profile on this Nubes instance. This information is used for 
-      referring to you appropriately, for wishing you a happy birthday, for 
-      security purposes and to let you sign in to third parties in a click.
-    </p>
-
-    <turbo-frame id="basic-info">
-      <div class="profile-fieldset">
-        <h2>Update gender details</h2>
-        <%= form_with model: @user, url: me_path, class: "space-y-1", html: { "data-turbo-action" => "advance", "data-controller" => "edit-gender-form" } do |f| %>
-          <div>
-            <%= f.label :gender do %>Gender<% end %>
-            <%= f.select :gender, options_for_select(
-                [
-                  ["I'd rather not say", ""],
-                  ["Female", "female"],
-                  ["Male", "male"],
-                  ["Other", "other"],
-                ], @user.gender.in?([nil, "", "male", "female"]) ? @user.gender.to_s : "other"
-              ), {}, autofocus: true, class: "text-control", "data-edit-gender-form-target" => "select", "data-action" => "input->edit-gender-form#update"
-            %>
-          </div>
-          
-          <div data-edit-gender-form-target="other">
-            <label for="other_gender">Other gender name</label>
-            <%= render TextFieldComponent.new(
-                id: "other_gender",
-                name: "user[gender]",
-                value: !@user.gender.in?(["male", "female"]) ? @user.gender : "",
-                "data-edit-gender-form-target" => "otherField"
-              )
-            %>
-          </div>
-
-          <div data-edit-gender-form-target="pronouns">
-            <%= f.label :pronouns do %>Pronouns<% end %>
-            <%= f.select :pronouns, options_for_select(
-                [
-                  ["she / her / hers", "feminine"],
-                  ["he / him / his", "masculine"],
-                  ["they / them / theirs", "neutral"],
-                ], @user.pronouns
-              ), {}, class: "text-control"
-            %>
-          </div>
-
-          <details>
-            <summary>How are your gender details used?</summary>
-            <ul>
-              <li>To refer to you with the appropriate pronouns.</li>
-              <li>If you use <i>OpenID Connect</i>, the website you sign in to may ask for your gender. You may then refuse to share it.</li>
-            </ul>
-          </details>
-
-          <div>
-            <%= link_to "Back", me_path, class: "btn btn--outline-secondary" %>
-            <button class="btn btn--primary" type="submit">Save</button>
-          </div>
-        <% end %>
-      </div>
-    </turbo-frame>
+    <div data-edit-gender-form-target="pronouns" style="display: none">
+      <%= f.label :pronouns do %>Pronouns<% end %>
+      <%= f.select :pronouns, options_for_select(
+          [
+            ["she / her / hers", "feminine"],
+            ["he / him / his", "masculine"],
+            ["they / them / theirs", "neutral"],
+          ], @user.pronouns
+        ), {}, class: "text-control"
+      %>
+    </div>
   </div>
-</div>
+
+  <details>
+    <summary>How are your gender details used?</summary>
+    <ul>
+      <li>To refer to you with the appropriate pronouns.</li>
+      <li>If you use <i>OpenID Connect</i>, the website you sign in to may ask for your gender. You may then refuse to share it.</li>
+    </ul>
+  </details>
+<% end %>

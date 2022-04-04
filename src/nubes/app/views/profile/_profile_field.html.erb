@@ -7,6 +7,9 @@
         <% case field.to_sym %>
           <% when :birthdate %>
             <%= l(value, format: :long) %>
+            <% if (@user.next_birthday - Date.today).to_i.zero? %>
+              <div><strong>🎂 Happy birthday!</strong></div>
+            <% end %>
           <% when :gender %>
             <% if user.gender.in?(["male", "female"]) %>
               <%= t("activerecord.attributes.user.gender_values.#{user.gender}") %>

@@ -38,9 +38,9 @@ RSpec.describe SessionsController, type: :controller do
 
     context "with invalid user id" do
       it "fails" do
-        expect {
+        expect do
           get :show, params: { method: :password, user_id: "invalid" }
-        }.to raise_error(ActiveRecord::RecordNotFound)
+        end.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
 

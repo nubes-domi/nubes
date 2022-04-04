@@ -1,0 +1,22 @@
+<%= render "header" %>
+
+<div class="d-flex profile">
+  <%= render "sidebar" %>
+
+  <div class="px-1 flex-grow">
+    <turbo-frame id="basic-info">
+      <div class="profile-fieldset">
+        <h2><%= title %></h2>
+
+        <%= form_with model: @user, url: me_path, class: "space-y-1", html: { "data-turbo-action" => "advance" } do |f| %>
+          <%= yield(f) %>
+
+          <div class="d-flex gap-1">
+            <%= link_to "Back", me_path, class: "btn btn--outline-secondary" %>
+            <button class="flex-grow btn btn--primary" type="submit">Save</button>
+          </div>
+        <% end %>
+      </div>
+    </turbo-frame>
+  </div>
+</div>
