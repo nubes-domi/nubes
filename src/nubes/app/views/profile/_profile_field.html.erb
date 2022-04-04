@@ -1,0 +1,26 @@
+<div class="d-flex align-center py-1:2 gap-1">
+  <div class="flex-grow d-flex profile-field">
+    <div class="profile-field-name"><%= user.class.human_attribute_name(field) %></div>
+    <% value = user.send(field) %>
+    <div class="profile-field-value <%= value.blank? ? "profile-field-value--missing" : "" %>">
+      <% if value.present? %>
+        <% case field.to_sym %>
+          <% when :birthdate %>
+            <%= l(value, format: :long) %>
+          <% when :gender %>
+            <% if user.gender.in?(["male", "female"]) %>
+              <%= t("activerecord.attributes.user.gender_values.#{user.gender}") %>
+            <% else %>
+              <%= value %>
+              (<%= t("activerecord.attributes.user.pronoun_values.#{user.pronouns}") %>)
+            <% end %>
+          <% else %>
+            <%= value %>
+        <% end %>
+      <% else %>
+        unspecified
+      <% end %>
+    </div>
+  </div>
+  <%= link_to "Edit", edit_link, class: "btn btn--sm btn--outline-secondary" %>
+</div>

@@ -1,0 +1,59 @@
+.profile {
+    max-width: 64rem;
+    margin: 0 auto;
+}
+
+.profile-fieldset {
+    @media (min-width: 40rem) {
+        border: 1px solid rgba(var(--rgb-light-text), 0.25);
+        border-radius: 1rem;
+        padding: 2rem;
+    }
+}
+
+.profile-sidebar {
+    display: none;
+    @media (min-width: 40rem) {
+        display: block;
+        flex: 0 0 33%;
+    }
+
+    a {
+        display: block;
+        padding: 1rem;
+        color: inherit;
+        font-weight: 500;
+        text-decoration: none;
+
+        &:hover, &.active {
+            background-color: rgba(white, .2)
+        }
+    }
+}
+
+.profile-field {
+    flex-direction: column;
+    @media (min-width: 40rem) {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+    }
+}
+
+.profile-field-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+
+    @media (min-width: 40rem) {
+        margin-bottom: 0;
+        flex-basis: 10rem;
+    }
+}
+
+.profile-field-value {
+    word-break: break-word;
+
+    &--missing {
+        font-style: italic;
+    }
+}

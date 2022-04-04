@@ -1,0 +1,4 @@
+<turbo-frame target="_top" class="d-flex flex-column profile-sidebar">
+  <%= link_to "Your profile", me_path, class: request.path == me_path ? "active" : "" %>
+  <%= link_to "Security", me_path %>
+</turbo-frame>

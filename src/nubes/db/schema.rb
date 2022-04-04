@@ -33,6 +33,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_01_210232) do
     t.string "phone_number"
     t.boolean "phone_number_verified"
     t.date "birthdate"
+    t.string "gender"
+    t.string "pronouns"
     t.string "address_street"
     t.string "address_locality"
     t.string "address_region"

@@ -1,0 +1,9 @@
+<div>
+  <% @presenter.lines.each do |line| %>
+    <div>
+      <% line.split("\n").each do |part| %>
+        <div><%= part %></div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

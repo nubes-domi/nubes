@@ -8,6 +8,26 @@ class User < ApplicationRecord
 
   validates :username, uniqueness: true
 
+  def name
+    "#{given_name} #{middle_name} #{family_name}".strip.gsub(/ +/, " ")
+  end
+
+  def list_name
+    name.presence || username
+  end
+
+  def any_address?
+    %i[street locality region postal_code country].any? { |part| send("address_#{part}") }
+  end
+
+  def pronouns
+    case gender
+    when "male" then "masculine"
+    when "female" then "feminine"
+    else super || "neutral"
+    end
+  end
+
   class << self
     def identify(identifier)
       return nil unless identifier.present?

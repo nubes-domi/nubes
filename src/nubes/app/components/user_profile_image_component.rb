@@ -10,11 +10,11 @@ class UserProfileImageComponent < ViewComponent::Base
   end
 
   def picture?
-    @user.picture.present?
+    false #@user.picture.present?
   end
 
   def placeholder_color
-    colors = %w[9a1110 9a6410 979a10 659a10 109a39 109a7b 107f9a 104f9a 55109a 8f109a]
+    colors = %w[659a10 109a39 109a7b 107f9a 104f9a 55109a 8f109a 979a10 9a1110 9a6410]
 
     n = Zlib.crc32(@user.id) % colors.length
 

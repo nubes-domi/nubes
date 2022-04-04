@@ -2,17 +2,24 @@
     font-family: inherit;
     font-size: 0.875rem;   
     font-weight: 500;
+    text-decoration: none;
 
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     padding: 0.625rem 1.5rem;
 
-    border: 0;
+    border: px(1) solid transparent;
     border-radius: 0.5rem;
     outline-offset: 0.125rem;
 
     cursor: pointer;
     transition: 250ms ease;
     transition-property: background-color, box-shadow;
+
+    &--sm {
+        padding: 0.5rem 1.25rem;
+        font-size: 0.8rem;
+    }
 
     &--lg {
         padding-top: 0.75rem;
@@ -26,15 +33,74 @@
     color: white;
 
     &:hover, &:focus {
+        border-color: rgb(var(--rgb-primary-dark-1));
         background-color: rgb(var(--rgb-primary-dark-1));
-        box-shadow: 0 1px 3px 1px rgba(#3c4043, 0.2);
+        box-shadow: 0 px(1) px(3) px(1) rgba(#3c4043, 0.2);
     }
 
     &:focus {
-        outline: 2px solid rgb(var(--rgb-primary-dark-1));
+        outline: px(2) solid rgb(var(--rgb-primary-dark-1));
+    }
+
+    &:active {
+        border-color: rgb(var(--rgb-primary-dark-2));
+        background-color: rgb(var(--rgb-primary-dark-2));
+    }
+}
+
+.btn--outline-primary {
+    border-color: rgb(var(--rgb-primary-dark-1));
+    color: white;
+
+    &:hover, &:focus {
+        background-color: rgb(var(--rgb-primary-dark-1));
+        box-shadow: 0 px(1) px(3) px(1) rgba(#3c4043, 0.2);
+    }
+
+    &:focus {
+        outline: px(2) solid rgb(var(--rgb-primary-dark-1));
     }
 
     &:active {
         background-color: rgb(var(--rgb-primary-dark-2));
+    }
+}
+
+
+.btn--secondary {
+    background: rgb(var(--rgb-secondary));
+    color: white;
+
+    &:hover, &:focus {
+        border-color: rgb(var(--rgb-secondary-dark-1));
+        background-color: rgb(var(--rgb-secondary-dark-1));
+        box-shadow: 0 px(1) px(3) px(1) rgba(#3c4043, 0.2);
+    }
+
+    &:focus {
+        outline: px(2) solid rgb(var(--rgb-secondary-dark-1));
+    }
+
+    &:active {
+        border-color: rgb(var(--rgb-secondary-dark-2));
+        background-color: rgb(var(--rgb-secondary-dark-2));
+    }
+}
+
+.btn--outline-secondary {
+    border-color: rgb(var(--rgb-secondary-dark-1));
+    color: white;
+
+    &:hover, &:focus {
+        background-color: rgb(var(--rgb-secondary-dark-1));
+        box-shadow: 0 px(1) px(3) px(1) rgba(#3c4043, 0.2);
+    }
+
+    &:focus {
+        outline: px(2) solid rgb(var(--rgb-secondary-dark-1));
+    }
+
+    &:active {
+        background-color: rgb(var(--rgb-secondary-dark-2));
     }
 }

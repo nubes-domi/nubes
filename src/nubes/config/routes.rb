@@ -12,4 +12,12 @@ Rails.application.routes.draw do
   # Authentication (password / webauthn)
   get "signin/:method", to: "sessions#show", as: :authentication
   post "signin/:method", to: "sessions#update"
+
+  # Profile
+  get "me", to: "profile#show"
+  post "me", to: "profile#update"
+  get "me/name", to: "profile#name", as: :me_name
+  get "me/birthdate", to: "profile#birthdate", as: :me_birthdate
+  get "me/gender", to: "profile#gender", as: :me_gender
+  patch "me", to: "profile#update"
 end

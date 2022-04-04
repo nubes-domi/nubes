@@ -1,0 +1,19 @@
+en:
+  activerecord:
+    attributes:
+      user:
+        name: Name
+        birthdate: Birthday
+        gender: Gender
+        email: Email
+        phone_number: Phone number
+        address: address
+
+        gender_values:
+          male: Male
+          female: Female
+
+        pronoun_values:
+          masculine: he / him / his
+          feminine: she / her / hers
+          neutral: they / them / theirs

@@ -1,0 +1,48 @@
+<div class="text-center">
+  <%= render UserProfileImageComponent.new(user: @user, size: "xl", klass: "mb-1") %>
+  <h1 class="text-xxl">
+    <%= @user.name.presence || @user.username %>
+  </h1>
+</div>
+
+<div class="d-flex profile">
+  <%= render "sidebar" %>
+
+  <div class="px-1">
+    <p>
+      Your profile on Nubes. This information is used for referring to you 
+      appropriately, for wishing you a happy birthday, for security purposes 
+      and to let you sign in to third parties in a click.
+    </p>
+
+    <h2>Change your name</h2>
+
+    <turbo-frame id="basic-info">
+      <%= form_with model: @user, url: me_path, class: "space-y-1", html: { "data-turbo-action" => "advance" } do |f| %>
+        <% %i[given_name middle_name family_name].each_with_index do |component, i| %>
+          <div>
+            <label for="<%= component %>"><%= component.to_s.humanize %></label>
+            <%= render TextFieldComponent.new(
+              name: "user[#{component}]",
+              value: @user.send(component),
+              autofocus: i == 0
+            ) %>
+          </div>
+        <% end %>
+
+        <details>
+          <summary>How is your name used?</summary>
+          <ul>
+            <li>To distinguish you from other users on your Nubes instance.</li>
+            <li>To generate shareable Contacts cards (digital business cards).</li>
+            <li>Your first name is also used to refer to you informally.</li>
+            <li>If you use <i>OpenID Connect</i>, the website you sign in to may ask for your name. You may then refuse to share it.</li>
+          </ul>
+        </details>
+
+        <%= link_to "Back", me_path, class: "btn btn--outline-secondary" %>
+        <button class="btn btn--primary" type="submit">Save</button>
+      <% end %>
+    </turbo-frame>
+  </div>
+</div>

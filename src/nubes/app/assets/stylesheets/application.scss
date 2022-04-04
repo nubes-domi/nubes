@@ -4,6 +4,10 @@
  *   TailwindCSS (https://github.com/tailwindlabs/tailwindcss)
  */
 
+@function px($val) {
+    @return ($val / 16) * 1rem;
+}
+
 html {
     font-size: 100%;
     -webkit-font-smoothing: antialias;
@@ -17,9 +21,13 @@ body {
     color: var(--copy-color);
 }
 
-h1, h2, h3, h4, h5, h6, p {
+h1, h2, h3, h4, h5, h6 {
     margin-top: 0;
     font-weight: 500;
+}
+
+p {
+    margin-top: 0;
 }
 
 label {
@@ -35,6 +43,7 @@ label {
 @import "components/badges";
 @import "components/buttons";
 @import "components/forms";
+@import "modules/profile";
 @import "modules/signin";
 @import "modules/user-profile-image";
 

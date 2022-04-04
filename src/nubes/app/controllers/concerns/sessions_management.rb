@@ -1,6 +1,12 @@
 module SessionsManagement
   extend ActiveSupport::Concern
 
+  included do
+    before_action :ensure_authenticated
+  end
+
+  protected
+
   def start_session(session)
     cookies[:current_session] = session.token if add_session(session)
   end
@@ -49,6 +55,10 @@ module SessionsManagement
   def session_token_for(user_id)
     pair = active_sessions.find { |_, session| session.user_id == user_id }
     pair[0] if pair
+  end
+
+  def ensure_authenticated
+    redirect_to signin_path(continue: request.path) unless current_session
   end
 
   private

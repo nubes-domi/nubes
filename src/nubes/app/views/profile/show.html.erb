@@ -1,0 +1,49 @@
+<div class="text-center">
+  <%= render UserProfileImageComponent.new(user: @user, size: "xl", klass: "mb-1") %>
+  <h1 class="text-xxl">
+    <%= @user.name.presence || @user.username %>
+  </h1>
+</div>
+
+<div class="d-flex profile">
+  <%= render "sidebar" %>
+
+  <div class="px-1">
+    <p>
+      Your profile on Nubes. This information is used for referring to you 
+      appropriately, for wishing you a happy birthday, for security purposes 
+      and to let you sign in to third parties in a click.
+    </p>
+
+    <h2>Basic info</h2>
+
+    <div class="mb-3">
+      <turbo-frame id="basic-info">
+        <%= render "profile_field", user: @user, field: :name, edit_link: me_name_path %>
+        <%= render "profile_field", user: @user, field: :birthdate, edit_link: me_birthdate_path %>
+        <%= render "profile_field", user: @user, field: :gender, edit_link: me_gender_path %>
+      </turbo-frame>
+    </div>
+
+    <h2>Contacts</h2>
+
+    <div class="mb-3">
+      <turbo-frame id="contacts">
+        <%= render "profile_field", user: @user, field: :email, edit_link: me_name_path %>
+        <%= render "profile_field", user: @user, field: :phone_number, edit_link: me_name_path %>
+      </turbo-frame>
+    </div>
+
+    <% if @user.any_address? %>
+      <h2 class="mt-2">Address</h2>
+      
+      <%= render ContactAddressComponent.new(
+        street: @user.address_street,
+        postal_code: @user.address_postal_code,
+        locality: @user.address_locality,
+        region: @user.address_region,
+        country: @user.address_country,
+      ) %>
+    <% end %>
+  </div>
+</div>

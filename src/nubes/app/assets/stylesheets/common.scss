@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .text-left {
     text-align: left;
 }
@@ -26,32 +28,141 @@
     justify-content: center;
 }
 
+.flex-grow {
+    flex-grow: 1;
+}
+
 .align-center {
     align-items: center;
 }
 
-.mb-1 {
-    margin-bottom: 1rem;
+@for $i from 2 through 5 {
+    .mt-1\:#{$i} {
+        margin-top: #{math.div(1rem, $i)};
+    }
+
+    .mr-1\:#{$i} {
+        margin-right: #{math.div(1rem, $i)};
+    }
+
+    .mb-1\:#{$i} {
+        margin-bottom: #{math.div(1rem, $i)};
+    }
+
+    .ml-1\:#{$i} {
+        margin-left: #{math.div(1rem, $i)};
+    }
+
+    .mx-1\:#{$i} {
+        margin-right: #{math.div(1rem, $i)};
+        margin-left: #{math.div(1rem, $i)};
+    }
+
+    .my-1\:#{$i} {
+        margin-top: #{math.div(1rem, $i)};
+        margin-bottom: #{math.div(1rem, $i)};
+    }
+
+    .pt-1\:#{$i} {
+        padding-top: #{math.div(1rem, $i)};
+    }
+
+    .pr-1\:#{$i} {
+        padding-right: #{math.div(1rem, $i)};
+    }
+
+    .pb-1\:#{$i} {
+        padding-bottom: #{math.div(1rem, $i)};
+    }
+
+    .pl-1\:#{$i} {
+        padding-left: #{math.div(1rem, $i)};
+    }
+
+    .px-1\:#{$i} {
+        padding-right: #{math.div(1rem, $i)};
+        padding-left: #{math.div(1rem, $i)};
+    }
+
+    .py-1\:#{$i} {
+        padding-top: #{math.div(1rem, $i)};
+        padding-bottom: #{math.div(1rem, $i)};
+    }
+
+    .gap-1\:#{$i} {
+        gap: #{math.div(1rem, $i)};
+    }
 }
 
-.mb-2 {
-    margin-bottom: 2rem;
+@for $i from 0 through 5 {
+    .mt-#{$i} {
+        margin-top: #{$i}rem;
+    }
+
+    .mr-#{$i} {
+        margin-right: #{$i}rem;
+    }
+
+    .mb-#{$i} {
+        margin-bottom: #{$i}rem;
+    }
+
+    .ml-#{$i} {
+        margin-left: #{$i}rem;
+    }
+
+    .mx-#{$i} {
+        margin-right: #{$i}rem;
+        margin-left: #{$i}rem;
+    }
+
+    .my-#{$i} {
+        margin-top: #{$i}rem;
+        margin-bottom: #{$i}rem;
+    }
+
+    .pt-#{$i} {
+        padding-top: #{$i}rem;
+    }
+
+    .pr-#{$i} {
+        padding-right: #{$i}rem;
+    }
+
+    .pb-#{$i} {
+        padding-bottom: #{$i}rem;
+    }
+
+    .pl-#{$i} {
+        padding-left: #{$i}rem;
+    }
+
+    .px-#{$i} {
+        padding-right: #{$i}rem;
+        padding-left: #{$i}rem;
+    }
+
+    .py-#{$i} {
+        padding-top: #{$i}rem;
+        padding-bottom: #{$i}rem;
+    }
+
+    .gap-#{$i} {
+        gap: #{$i}rem;
+    }
 }
 
-.mt-1 {
-    margin-top: 1rem;
-}
-
-.mt-2 {
-    margin-top: 2rem;
+.mr-auto {
+    margin-right: auto;
 }
 
 .ml-auto {
     margin-left: auto;
 }
 
-.ml-1 {
-    margin-left: 1rem;
+.mx-auto {
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .space-y-1 > * {
@@ -64,4 +175,20 @@
 
 .h-100vh {
     height: 100vh;
+}
+
+details {
+    summary {
+        &:hover {
+            text-decoration: underline;
+        }
+        cursor: pointer;
+    }
+
+    & > div, & > ul {
+        margin-top: 0;
+        padding: 1rem;
+        font-size: 0.9rem;
+        line-height: 1.4rem;
+    }
 }

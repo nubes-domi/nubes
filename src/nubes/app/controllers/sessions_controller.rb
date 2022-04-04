@@ -1,4 +1,5 @@
 class SessionsController < ApplicationController
+  skip_before_action :ensure_authenticated
   before_action :prevent_duplicate_sessions, only: %i[show update]
 
   def new
