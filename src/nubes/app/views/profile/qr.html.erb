@@ -1,0 +1,7 @@
+<%= turbo_frame_tag "qr-code-modal" do %>
+  <div class="qr-modal-container" data-controller="modal" data-action="click->modal#close keydown@window->modal#close">
+    <div class="qr-modal-body">
+      <%= image_tag "/me/qr.svg" %>
+    </div>
+  </div>
+<% end %>

@@ -15,13 +15,20 @@
       and to let you sign in to third parties in a click.
     </p>
 
+    <div class="text-right mb-2">
+      <%= link_to "Download vCard", me_path(format: "vcf"), class: "btn btn--secondary" %>
+      <%= link_to "QR", qr_me_path, class: "btn btn--secondary", data: { turbo_frame: "qr-code-modal" } %>
+    </div>
+
+    <%= turbo_frame_tag "qr-code-modal" %>
+
     <h2>Basic info</h2>
 
     <div class="mb-3">
       <turbo-frame id="basic-info">
-        <%= render "profile_field", user: @user, field: :name, edit_link: me_name_path %>
-        <%= render "profile_field", user: @user, field: :birthdate, edit_link: me_birthdate_path %>
-        <%= render "profile_field", user: @user, field: :gender, edit_link: me_gender_path %>
+        <%= render "profile_field", user: @user, field: :name, edit_link: name_me_path %>
+        <%= render "profile_field", user: @user, field: :birthdate, edit_link: birthdate_me_path %>
+        <%= render "profile_field", user: @user, field: :gender, edit_link: gender_me_path %>
       </turbo-frame>
     </div>
 
@@ -29,8 +36,8 @@
 
     <div class="mb-3">
       <turbo-frame id="contacts">
-        <%= render "profile_field", user: @user, field: :email, edit_link: me_name_path %>
-        <%= render "profile_field", user: @user, field: :phone_number, edit_link: me_name_path %>
+        <%= render "profile_field", user: @user, field: :email, edit_link: name_me_path %>
+        <%= render "profile_field", user: @user, field: :phone_number, edit_link: name_me_path %>
       </turbo-frame>
     </div>
 

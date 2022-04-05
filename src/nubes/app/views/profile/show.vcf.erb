@@ -1,0 +1,14 @@
+BEGIN:VCARD
+VERSION:4.0
+UID:urn:nubes:<%= @user.id %>
+FN:<%= @user.name.presence || @user.username %>
+N:<%= @user.family_name %>;<%= @user.given_name %>;<%= @user.middle_name %>
+<% if @user.birthdate %>BDAY:<%= @user.birthdate.strftime("%Y%m%d") %><% end %>
+<% if @user.email.present? %>EMAIL:<%= @user.email %><% end %>
+<% if @user.phone_number.present? %>TEL:<%= @user.phone_number %><% end %>
+<% if @user.gender.present? %>GENDER:<%= @user.gender.in?(["male", "female"]) ? @user.gender[0].upcase : ";" + @user.gender %><% end %>
+<% if @user.locale.present? %>LANG:<%= @user.locale %><% end %>
+<% if @user.zoneinfo.present? %>TZ:<%= @user.zoneinfo %><% end %>
+<% if @user.any_address? %>ADR;TYPE=home:;;<%= @user.address_street.gsub("\n", ",") %>;<%= @user.address_locality %>;<%= @user.address_region %>;<%= @user.address_postal_code %>;<%= @user.address_country %><% end %>
+REV:<%= @user.updated_at.iso8601 %>
+END:VCARD

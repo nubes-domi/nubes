@@ -8,7 +8,7 @@
             ["Female", "female"],
             ["Male", "male"],
             ["Other", "other"],
-          ], @user.gender
+          ], @user.gender.in?([nil, "", "male", "female"]) ? @user.gender.to_s : "other"
         ), {}, autofocus: true, class: "text-control", "data-edit-gender-form-target" => "select", "data-action" => "input->edit-gender-form#update"
       %>
     </div>

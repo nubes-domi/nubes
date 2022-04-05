@@ -14,10 +14,10 @@ Rails.application.routes.draw do
   post "signin/:method", to: "sessions#update"
 
   # Profile
-  get "me", to: "profile#show"
-  post "me", to: "profile#update"
-  get "me/name", to: "profile#name", as: :me_name
-  get "me/birthdate", to: "profile#birthdate", as: :me_birthdate
-  get "me/gender", to: "profile#gender", as: :me_gender
-  patch "me", to: "profile#update"
+  resource :me, controller: :profile, only: %i[show update] do
+    get :name, as: :name
+    get :birthdate, as: :birthdate
+    get :gender, as: :gender
+    get :qr, as: :qr
+  end
 end

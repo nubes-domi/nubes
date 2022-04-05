@@ -9,7 +9,6 @@ export default class extends Controller {
 
   update() {
     let value = this.selectTarget.value
-    console.log(value)
 
     if (value != "other") {
       this.selectTarget.name = "user[gender]"
@@ -24,7 +23,5 @@ export default class extends Controller {
       this.otherTarget.style.display = "block"
       this.pronounsTarget.style.display = "block"
     }
-
-    console.log(this.otherTarget.disabled)
   }
 }

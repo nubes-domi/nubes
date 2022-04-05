@@ -5,7 +5,8 @@
       <%= render TextFieldComponent.new(
         name: "user[#{component}]",
         value: @user.send(component),
-        autofocus: i == 0
+        autofocus: i == 0,
+        enterkeyhint: "done"
       ) %>
     </div>
   <% end %>
