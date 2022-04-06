@@ -6,6 +6,10 @@ class User < ApplicationRecord
 
   has_many :user_sessions, dependent: :destroy
 
+  has_many :contacts, dependent: :destroy
+  has_many :contact_addresses, through: :contacts
+  has_many :contact_postal_addresses, through: :contacts
+
   validates :username, uniqueness: true
 
   def name

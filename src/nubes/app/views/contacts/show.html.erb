@@ -1,0 +1,19 @@
+<h1><%= @contact.name %></h1>
+
+<div class="mb-2">
+  <h1>Contacts</h1>
+
+  <% @contact.contact_addresses.each do |address| %>
+    <%= render address %>
+  <% end %>
+
+  <%= link_to "New", new_contact_contact_address_path(@contact), class: "btn btn--sm btn--outline-secondary mt-1", style: "width: 10rem" %>
+</div>
+
+<h1>Addresses</h1>
+
+<% @contact.contact_postal_addresses.each do |postal_address| %>
+  <%= render postal_address %>
+<% end %>
+
+<%= link_to "New", new_contact_contact_postal_address_path(@contact) %>

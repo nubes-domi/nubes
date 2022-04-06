@@ -1,0 +1,21 @@
+<%= form_with model: [@contact, @contact_address], html: { class: "space-y-1" } do |f| %>
+  <div>
+    <%= f.label :name %>
+    <%= render TextFieldComponent.new(name: "contact_address[name]") %>
+  </div>
+  <div>
+    <%= f.label :kind %>
+    <%= render TextFieldComponent.new(name: "contact_address[kind]") %>
+  </div>
+  <div>
+    <%= f.label :data %>
+    <%= render TextFieldComponent.new(name: "contact_address[data]") %>
+  </div>
+  <div>
+    <%= f.label :preferred do %>
+      <%= f.check_box :preferred %>
+      Preferred
+    <% end %>
+  </div>
+  <%= f.submit "Save", class: "btn btn--primary" %>
+<% end %>

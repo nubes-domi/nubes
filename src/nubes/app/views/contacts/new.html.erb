@@ -1,0 +1,17 @@
+<h1>Create a new contact</h1>
+<%= form_with model: @contact, html: { class: "space-y-1" } do |f| %>
+  <% %i[given_name family_name].each_with_index do |component, i| %>
+    <div>
+      <label for="<%= component %>"><%= component.to_s.humanize %></label>
+      <%= render TextFieldComponent.new(
+        id: component,
+        name: "contact[#{component}]",
+        value: @contact.send(component),
+        autofocus: i == 0,
+        enterkeyhint: "done"
+      ) %>
+    </div>
+  <% end %>
+
+  <%= f.submit class: "btn btn--primary" %>
+<% end %>

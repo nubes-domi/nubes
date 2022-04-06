@@ -1,0 +1,9 @@
+<table>
+  <tbody>
+    <% @contacts.each do |contact| %>
+      <tr>
+        <td><%= link_to contact.name, contact_path(contact) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

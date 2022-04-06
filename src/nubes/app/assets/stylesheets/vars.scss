@@ -14,6 +14,7 @@
 
     --background-color: rgb(var(--rgb-white));
     --copy-color: rgb(var(--rgb-black));
+    --link-color: rgb(var(--rgb-primary));
 
     --rgb-primary: 26, 112, 240;
     --rgb-primary-dark-1: 15, 100, 224;
@@ -28,5 +29,6 @@
     @media (prefers-color-scheme: dark) {
         --background-color: rgb(var(--rgb-dark-background));
         --copy-color: rgb(var(--rgb-light-text));
+        --link-color: rgb(var(--rgb-white));
     }
 }
