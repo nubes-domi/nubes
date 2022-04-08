@@ -8,10 +8,11 @@ class ContactsController < ApplicationController
   end
 
   def create
-    @contact = current_user.contacts.build(contact_params)
-    if @contact.save
-      redirect_to contact_path(@contact)
+    op = Contacts::Operations::Create.call(current_user:, params: contact_params)
+    if op.success?
+      redirect_to contact_path(op["model"].id)
     else
+      @contact = op["model"]
       render :new, status: :unprocessable_entity
     end
   end
@@ -21,9 +22,10 @@ class ContactsController < ApplicationController
   end
 
   def update
-    @contact = current_user.contacts.find(params[:id])
-    if @contact.update(contact_params)
-      redirect_to contact_path(@contact)
+    op = Contacts::Operations::Create.call(current_user:, contact_id: params[:id], params: contact_params)
+    @contact = op["model"]
+    if op.success?
+      redirect_to contact_path(op["model"].id)
     else
       # render :edit, status: :unprocessable_entity
       abort

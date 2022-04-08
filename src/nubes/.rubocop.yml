@@ -1,5 +1,5 @@
 AllCops:
-  TargetRubyVersion: 3.0
+  TargetRubyVersion: 3.1
   NewCops: enable
   Exclude:
     - bin/**/*
@@ -40,3 +40,20 @@ Style/StringLiterals:
 
 Style/SymbolArray:
   Enabled: false
+
+### For Trailblazer
+
+# Follow Trailblazer namespacing convention
+Style/ClassAndModuleChildren:
+  Exclude:
+    - app/concepts/**/*
+
+# Allow `fail` as Trailblazer step definition
+Style/SignalException:
+  Exclude:
+    - app/concepts/**/*
+
+# Code after a `fail` step is reachable
+Lint/UnreachableCode:
+  Exclude:
+    - app/concepts/**/*

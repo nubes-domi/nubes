@@ -11,7 +11,7 @@ RSpec.describe Sessions::Operation::Start do
     result = described_class.wtf?(params: {
       user_id: users(:joe).id,
       password: "secret"
-    }, request: request)
+    }, request:)
 
     expect(result).to be_success
     expect(result["session"]).not_to be_nil

@@ -34,7 +34,7 @@ class SessionsController < ApplicationController
     authentication_path(
       method: :password,
       user_id: user.id,
-      continue: continue
+      continue:
     )
   end
 

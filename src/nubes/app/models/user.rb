@@ -7,8 +7,8 @@ class User < ApplicationRecord
   has_many :user_sessions, dependent: :destroy
 
   has_many :contacts, dependent: :destroy
-  has_many :contact_addresses, through: :contacts
-  has_many :contact_postal_addresses, through: :contacts
+  has_many :contact_addresses, through: :contacts, source: :addresses
+  has_many :contact_postal_addresses, through: :contacts, source: :postal_addresses
 
   validates :username, uniqueness: true
 

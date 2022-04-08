@@ -18,7 +18,7 @@ class ProfileController < ApplicationController
       format.svg do
         vcard = render_to_string action: :show, formats: [:vcf], layout: false
         qrcode = RQRCode::QRCode.new(vcard)
-        @qr = qrcode.as_svg(color: "000",  module_size: 6, standalone: true, offset: 32)
+        @qr = qrcode.as_svg(color: "000", module_size: 6, standalone: true, offset: 32)
       end
     end
   end
