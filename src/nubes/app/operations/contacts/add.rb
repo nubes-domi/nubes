@@ -1,5 +1,5 @@
 module Contacts
-  class Create < BaseOperation
+  class Add < BaseOperation
     around :transaction
 
     input_validation do
@@ -16,7 +16,7 @@ module Contacts
       end
     end
 
-    authorize Contact
+    authorize Contact, operation: :create?
     merge :build
     step :create
 

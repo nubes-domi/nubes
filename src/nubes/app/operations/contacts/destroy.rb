@@ -1,5 +1,3 @@
-require "step_adapters/validate"
-
 module Contacts
   class Destroy < BaseOperation
     around :transaction

@@ -9,9 +9,9 @@ class NubesSchema < GraphQL::Schema
     obj.class.graphql_type
   end
 
-  def self.id_from_object(object, _type_definition, _query_ctx)
-    object.id
-  end
+  # def self.id_from_object(object, _type_definition, _query_ctx)
+  #   object.id
+  # end
 
   def self.object_from_id(id, _query_ctx)
     PrettyId.find(id)

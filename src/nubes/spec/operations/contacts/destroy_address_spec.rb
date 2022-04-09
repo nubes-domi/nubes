@@ -1,14 +1,15 @@
 require "rails_helper"
 
-RSpec.describe Contacts::Create do
-  fixtures :users
+RSpec.describe Contacts::DestroyAddress do
+  fixtures :contacts, :contact_addresses, :users
+
+  let(:contact) { contacts(:joe_contact1) }
 
   let(:arguments) do
     {
       user: users(:joe),
-      attributes: {
-        given_name: "Alice"
-      }
+      id: contact_addresses(:joe_contact1_addr).id,
+      contact_id: contact.id
     }
   end
 
@@ -17,8 +18,8 @@ RSpec.describe Contacts::Create do
       expect(subject.call(**arguments)).to be_success
     end
 
-    it "creates a new contact" do
-      expect { subject.call(**arguments) }.to(change { Contact.count }.by(1))
+    it "destroys the address" do
+      expect { subject.call(**arguments) }.to(change { contact.addresses.count }.by(-1))
     end
   end
 

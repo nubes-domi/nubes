@@ -1,6 +1,12 @@
-Dry::Transaction::StepAdapters.register(:merge, StepAdapters::Merge.new)
-Dry::Transaction::StepAdapters.register(:tap, StepAdapters::Tap.new)
-Dry::Transaction::StepAdapters.register(:valid, StepAdapters::Validate.new)
+unless Dry::Transaction::StepAdapters.key?(:merge)
+  Dry::Transaction::StepAdapters.register(:merge,
+                                          StepAdapters::Merge.new)
+end
+Dry::Transaction::StepAdapters.register(:tap, StepAdapters::Tap.new) unless Dry::Transaction::StepAdapters.key?(:tap)
+unless Dry::Transaction::StepAdapters.key?(:valid)
+  Dry::Transaction::StepAdapters.register(:valid,
+                                          StepAdapters::Validate.new)
+end
 
 Forbidden = Class.new(StandardError)
 Invalid = Class.new(StandardError)
@@ -31,19 +37,15 @@ class BaseOperation
       end
     end
 
-    def authorize(key = :record, query = nil)
+    def authorize(key = :record, operation: nil)
       step :authorize
 
       define_method :authorize do |params|
         record = key.is_a?(Class) ? key : params[key]
-        query ||= "#{self.class.name.demodulize.underscore}?"
+        operation ||= "#{self.class.name.demodulize.underscore}?"
         policy = Pundit.policy!(params[:user], record)
 
-        if policy.public_send(query)
-          Success(params)
-        else
-          Failure(Forbidden.new(query:, record:, policy:))
-        end
+        policy.public_send(operation) ? Success(params) : Failure(Forbidden.new(operation:, record:, policy:))
       end
     end
   end
@@ -58,6 +60,14 @@ class BaseOperation
 
   def update(record:, attributes:, **)
     if record.update(attributes)
+      Success(record)
+    else
+      Failure(ArInvalid.new(record.errors))
+    end
+  end
+
+  def save(record:, **)
+    if record.save
       Success(record)
     else
       Failure(ArInvalid.new(record.errors))

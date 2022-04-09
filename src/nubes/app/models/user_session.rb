@@ -15,7 +15,7 @@ class UserSession < ApplicationRecord
       })
 
       find_by(id: decoded[0]["jti"])
-    rescue JWT::DecodeError, JWT::InvalidAudError, JWT::ExpiredSignature => e
+    rescue JWT::DecodeError, JWT::InvalidAudError, JWT::ExpiredSignature
       nil
     end
   end

@@ -32,9 +32,6 @@ gem "pundit"
 gem "rbnacl"
 gem "reform"
 gem "rqrcode"
-gem "trailblazer-macro-contract"
-gem "trailblazer-rails"
-gem "trailblazer-operation"
 gem "view_component"
 
 group :development, :test do

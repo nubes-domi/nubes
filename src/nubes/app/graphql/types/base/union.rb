@@ -1,3 +1,4 @@
+# :nocov:
 module Types
   module Base
     class Union < GraphQL::Schema::Union
@@ -6,3 +7,4 @@ module Types
     end
   end
 end
+# :nocov:

@@ -7,11 +7,9 @@ module Mutations
     field :errors, [Types::Error]
 
     def resolve(id:)
-      op = Contacts::Operations::Destroy.call(id:, current_user: context[:current_user])
-      if op.success?
+      result = Contacts::Destroy.call(id:, user: context[:current_user])
+      handle_failures(result) do
         {}
-      else
-        { errors: to_errors(op["errors"]) }
       end
     end
   end

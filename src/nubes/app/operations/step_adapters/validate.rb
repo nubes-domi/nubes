@@ -62,9 +62,9 @@ module StepAdapters
       end
 
       module ClassMethods
-        def input_validation(schema = nil, &block)
+        def input_validation(schema = nil, &)
           if block_given?
-            schema(Dry::Schema.Params(&block))
+            schema(Dry::Schema.Params(&))
           else
             schema(schema)
           end

@@ -4,12 +4,10 @@ module Mutations
 
     Contact.define_graphql_mutation(self, Types::Models::ContactType, type: :update)
 
-    def resolve(id:, **params)
-      op = Contacts::Operations::Update.call(current_user: context[:current_user], id:, params:)
-      if op.success?
-        { contact: op["model"] }
-      else
-        { errors: to_errors(op["errors"]) }
+    def resolve(id:, **attributes)
+      result = Contacts::Update.call(user: context[:current_user], id:, attributes:)
+      handle_failures(result) do |contact|
+        { contact: }
       end
     end
   end

@@ -3,8 +3,8 @@ class Contact < ApplicationRecord
   self.id_prefix = :cnt
 
   belongs_to :user
-  has_many :addresses, class_name: "ContactAddress"
-  has_many :postal_addresses, class_name: "ContactPostalAddress"
+  has_many :addresses, autosave: true, class_name: "ContactAddress"
+  has_many :postal_addresses, autosave: true, class_name: "ContactPostalAddress"
 
   ## GraphQL definition
   include Graphqlable
@@ -31,5 +31,33 @@ class Contact < ApplicationRecord
 
   def formatted_name
     [title, given_name, middle_name, family_name, suffix].map(&:presence).compact.join(" ")
+  end
+
+  def add_address(attributes:)
+    addresses.build(attributes)
+  end
+
+  def add_postal_address(attributes:)
+    postal_addresses.build(attributes)
+  end
+
+  def update_address(address_id:, attributes:)
+    address = addresses.find { |e| e.id == address_id }
+    address.assign_attributes(attributes)
+    address
+  end
+
+  def update_postal_address(postal_address_id:, attributes:)
+    postal_address = postal_addresses.find { |e| e.id == postal_address_id }
+    postal_address.assign_attributes(attributes)
+    postal_address
+  end
+
+  def destroy_address(address_id:)
+    addresses.find { |e| e.id == address_id }.mark_for_destruction
+  end
+
+  def destroy_postal_address(postal_address_id:)
+    postal_addresses.find { |e| e.id == postal_address_id }.mark_for_destruction
   end
 end

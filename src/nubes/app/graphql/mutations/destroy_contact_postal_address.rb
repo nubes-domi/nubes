@@ -2,21 +2,15 @@ module Mutations
   class DestroyContactPostalAddress < Mutations::BaseMutation
     null true
 
-    argument :id, ID
+    argument :id, ID, description: "ID of the contact postal address to be destroyed"
+    argument :contact_id, ID, description: "ID of the contact that owns the postal address"
 
-    field :contact_postal_address, Types::Models::ContactType
-    field :errors, [String]
+    field :errors, [Types::Error]
 
-    def resolve(id:)
-      contact_postal_address = context[:current_user].contact_postal_addresses.find(id)
-      if contact_postal_address.destroy
-        # Successful creation, return the created object with no errors
+    def resolve(id:, contact_id:)
+      result = Contacts::DestroyPostalAddress.call(id:, contact_id:, user: context[:current_user])
+      handle_failures(result) do
         {}
-      else
-        # Failed save, return the errors to the client
-        {
-          errors: contact_postal_address.errors.full_messages
-        }
       end
     end
   end

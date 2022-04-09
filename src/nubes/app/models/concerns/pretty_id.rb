@@ -21,8 +21,8 @@ module PrettyId
   end
 
   included do
-    before_create do
-      self.id = generate_id
+    after_initialize do
+      self.id ||= generate_id
     end
   end
 

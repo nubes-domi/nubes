@@ -1,3 +1,4 @@
+# :nocov:
 module Types
   module Base
     class Interface
@@ -9,3 +10,4 @@ module Types
     end
   end
 end
+# :nocov:
