@@ -1,5 +1,7 @@
 module Contacts
   class Create < BaseOperation
+    around :transaction
+
     input_validation do
       required(:user).filled
 

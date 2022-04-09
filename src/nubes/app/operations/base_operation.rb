@@ -72,14 +72,14 @@ class BaseOperation
     end
   end
 
-  # def transaction(input, &block)
-  #   result = nil
-  #   ActiveRecord::Base.transaction do
-  #     result = block.call(Success(input))
-  #     raise ActiveRecord::Rollback if result.failure?
-  #     result
-  #   end
-  # rescue ActiveRecord::Rollback
-  #   Failure(result)
-  # end
+  def transaction(**any, &block)
+    result = nil
+    ActiveRecord::Base.transaction do
+      result = block.call(Success(**any))
+      raise ActiveRecord::Rollback if result.failure?
+    end
+    result
+  rescue ActiveRecord::Rollback
+    Failure(result)
+  end
 end

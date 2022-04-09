@@ -1,6 +1,6 @@
 module Contacts
   class Update < BaseOperation
-    # around :transaction
+    around :transaction
 
     input_validation do
       required(:user).filled

@@ -2,7 +2,7 @@ require "step_adapters/validate"
 
 module Contacts
   class Destroy < BaseOperation
-    # around :transaction
+    around :transaction
 
     input_validation do
       required(:user).filled
