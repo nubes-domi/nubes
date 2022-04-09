@@ -10,12 +10,12 @@ class UserSession < ApplicationRecord
 
   class << self
     def for_token(token)
-      decoded = JWT.decode(token, Rails.application.credentials.secret_key_base, true, {
+      decoded = JWT.decode(token, Rails.application.secret_key_base, true, {
         algorithm: "HS256", aud: "auth", verify_aud: true
       })
 
       find_by(id: decoded[0]["jti"])
-    rescue JWT::DecodeError, JWT::InvalidAudError, JWT::ExpiredSignature
+    rescue JWT::DecodeError, JWT::InvalidAudError, JWT::ExpiredSignature => e
       nil
     end
   end
@@ -26,6 +26,6 @@ class UserSession < ApplicationRecord
       jti: id,
       exp: expires_at.to_i,
       aud: "auth"
-    }, Rails.application.credentials.secret_key_base, "HS256")
+    }, Rails.application.secret_key_base, "HS256")
   end
 end

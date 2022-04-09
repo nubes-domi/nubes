@@ -2,16 +2,19 @@ class SessionsController < ApplicationController
   skip_before_action :ensure_authenticated
   before_action :prevent_duplicate_sessions, only: %i[show update]
 
+  include Dry::Monads[:result]
+
   def new
   end
 
   def create
-    run Sessions::Operation::Identify do |result|
-      return redirect_to authentication_for(result["user"], continue: params[:continue])
+    result = Sessions::Identify.call(identifier: params[:identifier])
+    if result.success?
+      redirect_to authentication_for(result.value!, continue: params[:continue])
+    else
+      flash[:errors] = { identifier: "Invalid username or email" }
+      redirect_to signin_path(continue: params[:continue])
     end
-
-    flash[:errors] = { identifier: "Invalid username or email" }
-    redirect_to signin_path(continue: params[:continue])
   end
 
   def show
@@ -19,13 +22,14 @@ class SessionsController < ApplicationController
   end
 
   def update
-    ctx = run Sessions::Operation::Start, request: request do |result|
-      start_session(result["session"])
-      return signin_continue
+    case Sessions::Create.call(user_id: params[:user_id], password: params[:password], request:)
+    in Success(session)
+      start_session(session)
+      signin_continue
+    in Failure(NotFound)
+      flash[:errors] = { password: "Wrong password. Please try again." }
+      redirect_to authentication_path(method: :password, user_id: params[:user_id], continue: params[:continue])
     end
-
-    flash[:errors] = { password: "Wrong password. Please try again." }
-    redirect_to authentication_for(ctx["user"])
   end
 
   private

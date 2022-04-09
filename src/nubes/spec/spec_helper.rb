@@ -1,8 +1,8 @@
 require "simplecov"
 SimpleCov.start "rails" do
   add_group "GraphQL", "app/graphql"
+  add_group "Operations", "app/operations"
   add_group "ViewComponents", "app/components"
-  add_group "Trailblazer", "app/concepts"
   enable_coverage :branch
 end
 

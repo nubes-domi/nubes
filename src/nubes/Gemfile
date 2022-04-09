@@ -3,6 +3,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby "3.1.1"
 
+gem "dotenv-rails"
 gem "bootsnap", require: false
 gem "rails"
 gem "puma"
@@ -21,10 +22,13 @@ gem "turbo-rails"
 gem "stimulus-rails"
 
 gem "bcrypt"
+gem "dry-monads"
+gem "dry-transaction"
 gem "dry-validation"
 gem "jwt"
 gem "graphql"
 gem "graphiql-rails"
+gem "pundit"
 gem "rbnacl"
 gem "reform"
 gem "rqrcode"

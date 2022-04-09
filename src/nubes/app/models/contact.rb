@@ -2,10 +2,9 @@ class Contact < ApplicationRecord
   include PrettyId
   self.id_prefix = :cnt
 
+  belongs_to :user
   has_many :addresses, class_name: "ContactAddress"
   has_many :postal_addresses, class_name: "ContactPostalAddress"
-
-  validates :given_name, presence: true
 
   ## GraphQL definition
   include Graphqlable
