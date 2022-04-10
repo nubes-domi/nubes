@@ -1,10 +1,8 @@
 # :nocov:
 module Types
   module Base
-    class Interface
+    module Interface
       include GraphQL::Schema::Interface
-      edge_type_class(Types::Base::Edge)
-      connection_type_class(Types::Base::Connection)
 
       field_class Types::Base::Field
     end
